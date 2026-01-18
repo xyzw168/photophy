@@ -40,15 +40,26 @@
         #camera-box {
             position: relative; width: 100%; aspect-ratio: 4/3; 
             background: #000; border: 3px solid #000; margin-bottom: 15px; overflow: hidden;
+            user-select: none;
         }
 
-        /* Filter Kamera Preview */
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.3s; }
 
         #countdown {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 80px; color: white; font-weight: bold; z-index: 100;
             text-shadow: 4px 4px 0px var(--pink); display: none;
+        }
+
+        /* STICKER & FRAME CSS */
+        .sticker {
+            position: absolute; cursor: move; font-size: 40px; 
+            z-index: 20; touch-action: none; user-select: none;
+        }
+        
+        #current-frame-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 15; object-fit: fill;
         }
 
         .frame-overlay {
@@ -85,15 +96,6 @@
         }
         .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; }
         .pol-btns button { width: 100%; padding: 4px; font-size: 9px; cursor: pointer; border: 1px solid #000; font-weight: bold; margin-bottom: 2px; }
-
-        .sticker {
-    position: absolute; cursor: move; font-size: 40px; 
-    user-select: none; z-index: 20; touch-action: none;
-}
-#current-frame-img {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 15; object-fit: contain;
-}
     </style>
 </head>
 <body>
@@ -107,13 +109,22 @@
                 <div id="countdown">3</div>
                 <video id="video" autoplay playsinline></video>
                 <div id="current-frame" class="frame-overlay f-star"></div>
+                </div>
+
+            <div class="label">Custom Frame</div>
+            <div class="selector-group">
+                <button class="btn-option active" onclick="setCustomFrame('none', this)">NONE</button>
+                <button class="btn-option" onclick="setCustomFrame('https://i.ibb.co.com/B285BSFX/photophy-2.png', this)">A</button>
+                <button class="btn-option" onclick="setCustomFrame('https://i.ibb.co.com/B285BSFX/photophy-2.png', this)">B</button>
             </div>
 
-            <div class="label">Frame Color</div>
+            <div class="label">Add Stickers (Drag them!)</div>
             <div class="selector-group">
-                <div class="btn-f active" style="background:var(--yellow);" onclick="setFrame('f-star', this)"></div>
-                <div class="btn-f" style="background:var(--pink);" onclick="setFrame('f-heart', this)"></div>
-                <div class="btn-f" style="background:var(--green);" onclick="setFrame('f-cyber', this)"></div>
+                <button class="btn-option" onclick="addSticker('⭐')">⭐</button>
+                <button class="btn-option" onclick="addSticker('💖')">💖</button>
+                <button class="btn-option" onclick="addSticker('🎀')">🎀</button>
+                <button class="btn-option" onclick="addSticker('🦋')">🦋</button>
+                <button class="btn-option" style="background:var(--pink)" onclick="document.querySelectorAll('.sticker').forEach(s=>s.remove())">CLR</button>
             </div>
 
             <div class="label">Filter</div>
@@ -121,31 +132,14 @@
                 <button class="btn-option active" onclick="setFilter('none', this)">NORMAL</button>
                 <button class="btn-option" onclick="setFilter('vintage', this)">VINTAGE</button>
                 <button class="btn-option" onclick="setFilter('dreamy', this)">DREAMY</button>
-                <button class="btn-option" onclick="setFilter('cold', this)">COLD</button>
                 <button class="btn-option" onclick="setFilter('bw', this)">B&W</button>
             </div>
 
             <div class="label">Layout</div>
             <div class="selector-group">
                 <button class="btn-option active" onclick="setLayout('single', this)">SINGLE</button>
-                <button class="btn-option" onclick="setLayout('strip', this)">STRIP (x3)</button>
-                <button class="btn-option" onclick="setLayout('grid', this)">GRID (2x2)</button>
+                <button class="btn-option" onclick="setLayout('strip', this)">STRIP</button>
             </div>
-
-            <div class="label">Design Frame</div>
-<div class="selector-group">
-    <button class="btn-option active" onclick="setCustomFrame('none', this)">NONE</button>
-    <button class="btn-option" onclick="setCustomFrame('https://i.ibb.co.com/B285BSFX/photophy-2.png', this)">CUTE</button>
-    <button class="btn-option" onclick="setCustomFrame('https://i.ibb.co.com/B285BSFX/photophy-2.png', this)">RETRO</button>
-</div>
-
-<div class="label">Add Sticker</div>
-<div class="selector-group">
-    <button class="btn-option" onclick="addSticker('⭐')">⭐</button>
-    <button class="btn-option" onclick="addSticker('💖')">💖</button>
-    <button class="btn-option" onclick="addSticker('🎀')">🎀</button>
-    <button class="btn-option" onclick="addSticker('🦋')">🦋</button>
-</div>
 
             <button id="snap" class="main-btn">✨ TAKE PHOTO ✨</button>
         </div>
@@ -158,33 +152,26 @@
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const gallery = document.getElementById('gallery');
+        const cameraBox = document.getElementById('camera-box');
         const frameOverlay = document.getElementById('current-frame');
         const flash = document.getElementById('flash');
         const countdownEl = document.getElementById('countdown');
         const snapBtn = document.getElementById('snap');
         
-        let currentFrame = 'f-star';
         let currentLayout = 'single';
         let currentFilter = 'none';
+        let customFrameURL = 'none';
 
-        // Konfigurasi Filter CSS
         const filters = {
             none: '',
             vintage: 'sepia(0.5) contrast(1.2) brightness(1.1)',
-            dreamy: 'saturate(1.5) blur(0.5px) brightness(1.2) hue-rotate(-10deg)',
-            cold: 'contrast(1.1) brightness(1.1) hue-rotate(180deg) saturate(0.8)',
+            dreamy: 'saturate(1.5) blur(0.5px) brightness(1.1)',
             bw: 'grayscale(1) contrast(1.2)'
         };
 
         navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user", aspectRatio: { ideal: 1.333333 } } 
+            video: { facingMode: "user", aspectRatio: 1.333 } 
         }).then(stream => video.srcObject = stream);
-
-        function setFrame(f, el) {
-            currentFrame = f;
-            frameOverlay.className = 'frame-overlay ' + f;
-            updateActive(el, '.btn-f');
-        }
 
         function setFilter(f, el) {
             currentFilter = f;
@@ -197,6 +184,49 @@
             updateActive(el, '.btn-option');
         }
 
+        function setCustomFrame(url, el) {
+            customFrameURL = url;
+            const oldFrame = document.getElementById('current-frame-img');
+            if (oldFrame) oldFrame.remove();
+            if (url !== 'none') {
+                const img = document.createElement('img');
+                img.id = 'current-frame-img';
+                img.src = url;
+                cameraBox.appendChild(img);
+            }
+            updateActive(el, '.btn-option');
+        }
+
+        function addSticker(emoji) {
+            const sticker = document.createElement('div');
+            sticker.className = 'sticker';
+            sticker.innerText = emoji;
+            sticker.style.left = '50%';
+            sticker.style.top = '50%';
+            
+            sticker.onmousedown = function(e) {
+                let shiftX = e.clientX - sticker.getBoundingClientRect().left;
+                let shiftY = e.clientY - sticker.getBoundingClientRect().top;
+                sticker.style.zIndex = 1000;
+                
+                function moveAt(pageX, pageY) {
+                    let x = pageX - shiftX - cameraBox.getBoundingClientRect().left;
+                    let y = pageY - shiftY - cameraBox.getBoundingClientRect().top;
+                    sticker.style.left = x + 'px';
+                    sticker.style.top = y + 'px';
+                }
+
+                function onMouseMove(e) { moveAt(e.pageX, e.pageY); }
+                document.addEventListener('mousemove', onMouseMove);
+                sticker.onmouseup = function() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    sticker.onmouseup = null;
+                };
+            };
+            sticker.ondblclick = () => sticker.remove();
+            cameraBox.appendChild(sticker);
+        }
+
         function updateActive(el, selector) {
             el.parentElement.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
             el.classList.add('active');
@@ -205,7 +235,7 @@
         snapBtn.addEventListener('click', async () => {
             snapBtn.disabled = true;
             let capturedFrames = [];
-            let totalShots = (currentLayout === 'single') ? 1 : (currentLayout === 'strip' ? 3 : 4);
+            let totalShots = (currentLayout === 'single') ? 1 : 3;
 
             for(let i = 0; i < totalShots; i++) {
                 await runCountdown(3);
@@ -231,30 +261,11 @@
 
         function grabFrame() {
             const tempCanvas = document.createElement('canvas');
-            const targetWidth = 640;
-            const targetHeight = 480;
-            tempCanvas.width = targetWidth;
-            tempCanvas.height = targetHeight;
+            tempCanvas.width = 640; tempCanvas.height = 480;
             const tCtx = tempCanvas.getContext('2d');
-
-            // TERAPKAN FILTER KE CANVAS
             tCtx.filter = filters[currentFilter];
-
-            const videoAspect = video.videoWidth / video.videoHeight;
-            const targetAspect = targetWidth / targetHeight;
-            let sx, sy, sw, sh;
-
-            if (videoAspect > targetAspect) {
-                sh = video.videoHeight; sw = sh * targetAspect;
-                sx = (video.videoWidth - sw) / 2; sy = 0;
-            } else {
-                sw = video.videoWidth; sh = sw / targetAspect;
-                sx = 0; sy = (video.videoHeight - sh) / 2;
-            }
-
-            tCtx.translate(targetWidth, 0);
-            tCtx.scale(-1, 1);
-            tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+            tCtx.translate(640, 0); tCtx.scale(-1, 1);
+            tCtx.drawImage(video, 0, 0, 640, 480);
             return tempCanvas;
         }
 
@@ -263,22 +274,17 @@
             setTimeout(() => flash.classList.remove('flash-active'), 300);
         }
 
-        function renderFinal(imgs) {
+        async function renderFinal(imgs) {
             const ctx = canvas.getContext('2d');
             if(currentLayout === 'single') {
                 canvas.width = 640; canvas.height = 480;
-                drawWithFrame(ctx, imgs[0], 0, 0, 640, 480);
-            } else if(currentLayout === 'strip') {
+                await drawWithElements(ctx, imgs[0], 0, 0, 640, 480);
+            } else {
                 canvas.width = 320; canvas.height = 760;
                 ctx.fillStyle = "white"; ctx.fillRect(0,0,320,760);
-                imgs.forEach((img, i) => drawWithFrame(ctx, img, 20, 20 + (i*240), 280, 210));
-            } else if(currentLayout === 'grid') {
-                canvas.width = 600; canvas.height = 600;
-                ctx.fillStyle = "white"; ctx.fillRect(0,0,600,600);
-                drawWithFrame(ctx, imgs[0], 20, 20, 270, 270);
-                drawWithFrame(ctx, imgs[1], 310, 20, 270, 270);
-                drawWithFrame(ctx, imgs[2], 20, 310, 270, 270);
-                drawWithFrame(ctx, imgs[3], 310, 310, 270, 270);
+                for(let i=0; i<imgs.length; i++) {
+                    await drawWithElements(ctx, imgs[i], 20, 20 + (i*240), 280, 210);
+                }
             }
             const dataUrl = canvas.toDataURL('image/png');
             const div = document.createElement('div');
@@ -288,30 +294,30 @@
             gallery.prepend(div);
         }
 
-        function drawWithFrame(ctx, img, x, y, w, h) {
-    ctx.drawImage(img, x, y, w, h);
-    
-    ctx.lineWidth = w * 0.05;
-    ctx.setLineDash([]); // Reset dash
+        async function drawWithElements(ctx, img, x, y, w, h) {
+            ctx.drawImage(img, x, y, w, h);
+            
+            if (customFrameURL !== 'none') {
+                const fImg = new Image();
+                fImg.crossOrigin = "anonymous";
+                fImg.src = customFrameURL;
+                await new Promise(r => fImg.onload = r);
+                ctx.drawImage(fImg, x, y, w, h);
+            }
 
-    if (currentFrame === 'f-star') {
-        ctx.strokeStyle = '#fdffb6'; // Yellow
-        ctx.strokeRect(x + (ctx.lineWidth / 2), y + (ctx.lineWidth / 2), w - ctx.lineWidth, h - ctx.lineWidth);
-        ctx.fillStyle = "#000";
-        ctx.font = (w / 12) + "px serif";
-        ctx.fillText("★", x + w - (w * 0.1), y + h - (h * 0.05));
-    } else if (currentFrame === 'f-heart') {
-        ctx.strokeStyle = '#ffafcc'; // Pink
-        ctx.lineWidth = w * 0.08; // Lebih tebal untuk efek double
-        ctx.strokeRect(x + (ctx.lineWidth / 2), y + (ctx.lineWidth / 2), w - ctx.lineWidth, h - ctx.lineWidth);
-    } else if (currentFrame === 'f-cyber') {
-        ctx.strokeStyle = '#caffbf'; // Green
-        ctx.setLineDash([5, 5]); // Garis putus-putus seperti di preview CSS
-        ctx.strokeRect(x + (ctx.lineWidth / 2), y + (ctx.lineWidth / 2), w - ctx.lineWidth, h - ctx.lineWidth);
-    }
-}
+            const stickers = document.querySelectorAll('.sticker');
+            stickers.forEach(s => {
+                const rect = s.getBoundingClientRect();
+                const box = cameraBox.getBoundingClientRect();
+                const relX = ((rect.left - box.left) / box.width) * w;
+                const relY = ((rect.top - box.top) / box.height) * h;
+                ctx.font = (w/8) + "px Arial";
+                ctx.fillText(s.innerText, x + relX, y + relY + (w/10));
+            });
+        }
+
         function downloadImg(url) {
-            const a = document.createElement('a'); a.href = url; a.download = `y2k_snap.png`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `photophy_${Date.now()}.png`; a.click();
         }
     </script>
 </body>
