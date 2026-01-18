@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ Y2K PHOTOBOOTH FIX ✧</title>
+    <title>✧ Y2K PHOTOBOOTH + FILTERS ✧</title>
     <style>
         :root {
             --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
@@ -14,8 +14,7 @@
             background-image: radial-gradient(var(--pink) 1px, transparent 1px);
             background-size: 25px 25px;
             font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0;
         }
 
         #flash {
@@ -38,14 +37,13 @@
 
         .content { padding: 15px; text-align: center; }
 
-        /* Camera Box - Fix Overflow */
         #camera-box {
             position: relative; width: 100%; aspect-ratio: 4/3; 
             background: #000; border: 3px solid #000; margin-bottom: 15px; overflow: hidden;
         }
 
-        /* Video object-fit cover agar tidak penyet di layar */
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        /* Filter Kamera Preview */
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.3s; }
 
         #countdown {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -61,21 +59,19 @@
         .f-heart { border-color: var(--pink); border-style: double; border-width: 20px; }
         .f-cyber { border-color: var(--green); outline: 2px dashed #000; border-width: 12px; }
 
-        .label { font-size: 10px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
-        .selector-group { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+        .label { font-size: 10px; font-weight: bold; margin: 8px 0 4px 0; text-transform: uppercase; }
+        .selector-group { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
         
-        .btn-f { width: 30px; height: 30px; border: 2px solid #000; cursor: pointer; }
-        .btn-f.active { outline: 2px solid #000; transform: scale(1.1); }
-
-        .btn-layout {
-            padding: 5px 8px; border: 2px solid #000; background: #eee;
-            cursor: pointer; font-size: 9px; font-weight: bold;
+        .btn-f { width: 25px; height: 25px; border: 2px solid #000; cursor: pointer; }
+        .btn-option {
+            padding: 4px 8px; border: 2px solid #000; background: #eee;
+            cursor: pointer; font-size: 9px; font-weight: bold; font-family: inherit;
         }
-        .btn-layout.active { background: var(--pink); color: white; }
+        .active { background: var(--pink) !important; color: white; transform: scale(1.05); }
 
         .main-btn {
             width: 100%; padding: 12px; background: var(--green); border: 3px solid #000;
-            font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 4px 4px 0px #000;
+            font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 4px 4px 0px #000; margin-top: 10px;
         }
 
         #gallery {
@@ -96,7 +92,7 @@
     <div id="flash"></div>
 
     <div class="window">
-        <div class="title-bar"><span>📷 Y2K_MOBILE_FIX.EXE</span><span>[X]</span></div>
+        <div class="title-bar"><span>📸 Y2K_FILTER_EDIT.EXE</span><span>[X]</span></div>
         <div class="content">
             <div id="camera-box">
                 <div id="countdown">3</div>
@@ -104,18 +100,27 @@
                 <div id="current-frame" class="frame-overlay f-star"></div>
             </div>
 
-            <div class="label">Frame</div>
+            <div class="label">1. Frame Color</div>
             <div class="selector-group">
                 <div class="btn-f active" style="background:var(--yellow);" onclick="setFrame('f-star', this)"></div>
                 <div class="btn-f" style="background:var(--pink);" onclick="setFrame('f-heart', this)"></div>
                 <div class="btn-f" style="background:var(--green);" onclick="setFrame('f-cyber', this)"></div>
             </div>
 
-            <div class="label">Layout</div>
+            <div class="label">2. Aesthetic Filter</div>
             <div class="selector-group">
-                <button class="btn-layout active" onclick="setLayout('single', this)">SINGLE</button>
-                <button class="btn-layout" onclick="setLayout('strip', this)">STRIP (x3)</button>
-                <button class="btn-layout" onclick="setLayout('grid', this)">GRID (2x2)</button>
+                <button class="btn-option active" onclick="setFilter('none', this)">NORMAL</button>
+                <button class="btn-option" onclick="setFilter('vintage', this)">VINTAGE</button>
+                <button class="btn-option" onclick="setFilter('dreamy', this)">DREAMY</button>
+                <button class="btn-option" onclick="setFilter('cold', this)">COLD</button>
+                <button class="btn-option" onclick="setFilter('bw', this)">B&W</button>
+            </div>
+
+            <div class="label">3. Layout</div>
+            <div class="selector-group">
+                <button class="btn-option active" onclick="setLayout('single', this)">SINGLE</button>
+                <button class="btn-option" onclick="setLayout('strip', this)">STRIP (x3)</button>
+                <button class="btn-option" onclick="setLayout('grid', this)">GRID (2x2)</button>
             </div>
 
             <button id="snap" class="main-btn">✨ TAKE PHOTO ✨</button>
@@ -136,6 +141,16 @@
         
         let currentFrame = 'f-star';
         let currentLayout = 'single';
+        let currentFilter = 'none';
+
+        // Konfigurasi Filter CSS
+        const filters = {
+            none: '',
+            vintage: 'sepia(0.5) contrast(1.2) brightness(1.1)',
+            dreamy: 'saturate(1.5) blur(0.5px) brightness(1.2) hue-rotate(-10deg)',
+            cold: 'contrast(1.1) brightness(1.1) hue-rotate(180deg) saturate(0.8)',
+            bw: 'grayscale(1) contrast(1.2)'
+        };
 
         navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: "user", aspectRatio: { ideal: 1.333333 } } 
@@ -144,13 +159,22 @@
         function setFrame(f, el) {
             currentFrame = f;
             frameOverlay.className = 'frame-overlay ' + f;
-            document.querySelectorAll('.btn-f').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
+            updateActive(el, '.btn-f');
+        }
+
+        function setFilter(f, el) {
+            currentFilter = f;
+            video.style.filter = filters[f]; // Update preview kamera
+            updateActive(el, '.btn-option');
         }
 
         function setLayout(l, el) {
             currentLayout = l;
-            document.querySelectorAll('.btn-layout').forEach(b => b.classList.remove('active'));
+            updateActive(el, '.btn-option');
+        }
+
+        function updateActive(el, selector) {
+            el.parentElement.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
             el.classList.add('active');
         }
 
@@ -181,7 +205,6 @@
             });
         }
 
-        // FUNGSI FIX PENYET: Logika Crop Tengah
         function grabFrame() {
             const tempCanvas = document.createElement('canvas');
             const targetWidth = 640;
@@ -190,21 +213,19 @@
             tempCanvas.height = targetHeight;
             const tCtx = tempCanvas.getContext('2d');
 
-            // Hitung rasio untuk crop tengah
+            // TERAPKAN FILTER KE CANVAS
+            tCtx.filter = filters[currentFilter];
+
             const videoAspect = video.videoWidth / video.videoHeight;
             const targetAspect = targetWidth / targetHeight;
             let sx, sy, sw, sh;
 
             if (videoAspect > targetAspect) {
-                sh = video.videoHeight;
-                sw = sh * targetAspect;
-                sx = (video.videoWidth - sw) / 2;
-                sy = 0;
+                sh = video.videoHeight; sw = sh * targetAspect;
+                sx = (video.videoWidth - sw) / 2; sy = 0;
             } else {
-                sw = video.videoWidth;
-                sh = sw / targetAspect;
-                sx = 0;
-                sy = (video.videoHeight - sh) / 2;
+                sw = video.videoWidth; sh = sw / targetAspect;
+                sx = 0; sy = (video.videoHeight - sh) / 2;
             }
 
             tCtx.translate(targetWidth, 0);
@@ -230,10 +251,10 @@
             } else if(currentLayout === 'grid') {
                 canvas.width = 600; canvas.height = 600;
                 ctx.fillStyle = "white"; ctx.fillRect(0,0,600,600);
-                drawPhoto(ctx, imgs[0], 20, 20, 270, 270);
-                drawPhoto(ctx, imgs[1], 310, 20, 270, 270);
-                drawPhoto(ctx, imgs[2], 20, 310, 270, 270);
-                drawPhoto(ctx, imgs[3], 310, 310, 270, 270);
+                drawWithFrame(ctx, imgs[0], 20, 20, 270, 270);
+                drawWithFrame(ctx, imgs[1], 310, 20, 270, 270);
+                drawWithFrame(ctx, imgs[2], 20, 310, 270, 270);
+                drawWithFrame(ctx, imgs[3], 310, 310, 270, 270);
             }
             const dataUrl = canvas.toDataURL('image/png');
             const div = document.createElement('div');
@@ -243,26 +264,13 @@
             gallery.prepend(div);
         }
 
-        function drawPhoto(ctx, img, x, y, w, h) {
-            ctx.drawImage(img, x, y, w, h);
-            ctx.lineWidth = 10;
-            ctx.setLineDash([]);
-            ctx.strokeStyle = (currentFrame === 'f-star') ? '#fdffb6' : (currentFrame === 'f-heart' ? '#ffafcc' : '#caffbf');
-            ctx.strokeRect(x+5, y+5, w-10, h-10);
-        }
-
         function drawWithFrame(ctx, img, x, y, w, h) {
             ctx.drawImage(img, x, y, w, h);
-            ctx.lineWidth = w * 0.05;
-            ctx.setLineDash([]);
+            ctx.lineWidth = w * 0.05; ctx.setLineDash([]);
+            ctx.strokeStyle = (currentFrame === 'f-star') ? '#fdffb6' : (currentFrame === 'f-heart' ? '#ffafcc' : '#caffbf');
+            ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
             if(currentFrame === 'f-star') {
-                ctx.strokeStyle = '#fdffb6'; ctx.setLineDash([10, 10]);
-                ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
-                ctx.setLineDash([]); ctx.fillStyle="#000"; ctx.fillText("★", x+w-30, y+h-20);
-            } else if(currentFrame === 'f-heart') {
-                ctx.strokeStyle = '#ffafcc'; ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
-            } else {
-                ctx.strokeStyle = '#caffbf'; ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
+                ctx.fillStyle="#000"; ctx.font = (w/12)+"px serif"; ctx.fillText("★", x+w-30, y+h-20);
             }
         }
 
