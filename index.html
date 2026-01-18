@@ -3,253 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ Y2K DIGITAL BOOTH ✧</title>
+    <title>✧ photophy ✧</title>
     <style>
         :root {
-            --pink: #ffafcc;
-            --blue: #a2d2ff;
-            --green: #caffbf;
-            --yellow: #fdffb6;
-            --purple: #cdb4db;
+            --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
         }
 
         body {
-            background: var(--blue);
-            background-image: 
-                linear-gradient(var(--pink) 1px, transparent 1px),
-                linear-gradient(90deg, var(--pink) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background: var(--pink);
+            background-image: linear-gradient(var(--blue) 2px, transparent 2px), linear-gradient(90deg, var(--blue) 2px, transparent 2px);
+            background-size: 40px 40px;
             font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0;
         }
 
-        .main-card {
-            background: #fff;
-            border: 5px solid #000;
-            box-shadow: 12px 12px 0px var(--green);
-            border-radius: 2px; /* Gaya Windows 98 agak kaku */
-            padding: 20px;
-            max-width: 500px;
-            width: 100%;
+        /* Flash Effect */
+        #flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; z-index: 999;
+        }
+        .flash-active { animation: flash-anim 0.3s ease-out; }
+        @keyframes flash-anim { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        .window {
+            background: #fff; border: 4px solid #000; box-shadow: 10px 10px 0px #000;
+            width: 100%; max-width: 500px; position: relative;
         }
 
-        .header-bar {
-            background: linear-gradient(90deg, var(--purple), var(--pink));
-            color: white;
-            padding: 5px 10px;
-            margin: -20px -20px 20px -20px;
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            border-bottom: 3px solid #000;
+        .title-bar {
+            background: linear-gradient(90deg, #000080, #1084d0);
+            color: white; padding: 5px 10px; display: flex; justify-content: space-between;
+            font-weight: bold; font-size: 14px;
         }
 
-        /* Preview Kamera */
-        #camera-zone {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: #000;
-            border: 3px solid #000;
-            overflow: hidden;
-            margin-bottom: 15px;
+        .content { padding: 20px; text-align: center; }
+
+        #camera-box {
+            position: relative; width: 100%; aspect-ratio: 4/3; 
+            background: #000; border: 3px solid #000; margin-bottom: 15px;
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-        /* Overlay Frame saat Preview */
         .frame-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            border: 20px solid transparent;
-            box-sizing: border-box;
-            z-index: 10;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10; display: flex; align-items: center; justify-content: center;
+            font-size: 40px; border: 25px solid transparent; box-sizing: border-box;
         }
 
-        /* Pilihan Frame */
-        .frame-selector {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 15px;
+        /* Frame Styles */
+        .f-star { border-color: var(--yellow); border-style: dotted; }
+        .f-star::after { content: '★'; position: absolute; bottom: 5px; right: 5px; }
+        .f-heart { border-color: var(--pink); border-style: double; }
+        .f-heart::after { content: '💖'; position: absolute; top: 5px; left: 5px; }
+        .f-cyber { border-color: var(--green); outline: 2px dashed #000; }
+
+        .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .btn-frame { height: 40px; border: 2px solid #000; cursor: pointer; font-size: 10px; font-weight: bold; }
+
+        .main-btns { display: flex; gap: 10px; }
+        button.capture-btn { 
+            flex: 2; padding: 15px; background: var(--yellow); border: 3px solid #000; 
+            font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0px #000;
         }
 
-        .frame-opt {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #000;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .frame-opt:hover { transform: scale(1.1); }
-
-        /* Style Frame */
-        .f-pink { border-color: var(--pink) !important; background: rgba(255, 175, 204, 0.2); }
-        .f-blue { border-color: var(--blue) !important; border-style: dashed !important; }
-        .f-green { border-image: repeating-linear-gradient(45deg, var(--green), var(--green) 10px, #fff 10px, #fff 20px) 20; }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        button {
-            padding: 12px;
-            font-family: 'Courier New', sans-serif;
-            font-weight: bold;
-            border: 3px solid #000;
-            cursor: pointer;
-            background: var(--yellow);
-            box-shadow: 4px 4px 0px #000;
-        }
-
-        button:active {
-            box-shadow: 0px 0px 0px #000;
-            transform: translate(4px, 4px);
-        }
-
-        /* Gallery */
+        /* Gallery Style */
         #gallery {
-            margin-top: 25px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 30px; width: 100%; max-width: 500px;
         }
 
-        .captured-photo {
-            position: relative;
-            background: white;
-            padding: 5px;
-            border: 2px solid #000;
+        .polaroid {
+            background: white; padding: 10px 10px 30px 10px; border: 1px solid #ddd;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1); transform: rotate(calc(var(--r, 0) * 1deg));
         }
 
-        canvas { display: none; }
+        .polaroid img { width: 100%; border: 1px solid #eee; }
 
-        img { width: 100%; display: block; }
-
-        .footer-text {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            color: #555;
-            text-align: center;
-        }
+        .pol-btns { display: flex; justify-content: space-between; margin-top: 8px; }
+        .pol-btns button { font-size: 10px; cursor: pointer; padding: 2px 5px; border: 1px solid #000; background: #eee; }
     </style>
 </head>
 <body>
 
-    <div class="main-card">
-        <div class="header-bar">
-            <span>Y2K_BOOTH.EXE</span>
-            <span>[X]</span>
-        </div>
+    <div id="flash"></div>
 
-        <div id="camera-zone">
-            <video id="video" autoplay playsinline></video>
-            <div id="current-frame" class="frame-overlay f-pink"></div>
+    <div class="window">
+        <div class="title-bar">
+            <span>photophy</span>
+            <span>💾 ☒</span>
         </div>
+        <div class="content">
+            <div id="camera-box">
+                <video id="video" autoplay playsinline></video>
+                <div id="current-frame" class="frame-overlay f-star"></div>
+            </div>
 
-        <p style="text-align: center; font-size: 0.9rem; margin-top: 0;">SELECT FRAME:</p>
-        <div class="frame-selector">
-            <div class="frame-opt f-pink" onclick="setFrame('f-pink')"></div>
-            <div class="frame-opt f-blue" onclick="setFrame('f-blue')"></div>
-            <div class="frame-opt f-green" onclick="setFrame('f-green')"></div>
-        </div>
+            <div class="controls">
+                <button class="btn-frame f-star" onclick="setFrame('f-star')">STAR</button>
+                <button class="btn-frame f-heart" onclick="setFrame('f-heart')">HEART</button>
+                <button class="btn-frame f-cyber" onclick="setFrame('f-cyber')">CYBER</button>
+            </div>
 
-        <div class="btn-group">
-            <button id="snap" style="background: var(--pink);">[ TAKE PHOTO ]</button>
-            <button id="downloadAll" style="background: var(--green);">[ SAVE ALL ]</button>
+            <div class="main-btns">
+                <button id="snap" class="capture-btn">📸 TAKE SHOT</button>
+                <button onclick="location.reload()" style="flex:1; border:3px solid #000; background: var(--blue); font-weight:bold; cursor:pointer;">RESET</button>
+            </div>
         </div>
     </div>
 
     <div id="gallery"></div>
-    <canvas id="canvas" width="600" height="450"></canvas>
-
-    <div class="footer-text">✿ design by your-name ✿</div>
+    <canvas id="canvas" width="600" height="450" style="display:none;"></canvas>
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const gallery = document.getElementById('gallery');
         const frameOverlay = document.getElementById('current-frame');
-        let currentFrameClass = 'f-pink';
+        const flash = document.getElementById('flash');
+        let currentFrame = 'f-star';
 
-        // Kamera
         navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => video.srcObject = stream)
-            .catch(err => alert("Kamera error: " + err));
+            .then(stream => video.srcObject = stream);
 
-        // Ganti Frame
-        function setFrame(className) {
-            frameOverlay.className = 'frame-overlay ' + className;
-            currentFrameClass = className;
+        function setFrame(f) {
+            frameOverlay.className = 'frame-overlay ' + f;
+            currentFrame = f;
         }
 
-        // Ambil Foto
         document.getElementById('snap').addEventListener('click', () => {
+            // Flash effect
+            flash.classList.add('flash-active');
+            setTimeout(() => flash.classList.remove('flash-active'), 300);
+
             const ctx = canvas.getContext('2d');
             
-            // 1. Gambar Video (Mirror)
+            // Draw Video
             ctx.save();
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
+            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             ctx.restore();
 
-            // 2. Gambar Frame di atas foto
+            // Draw Frame onto Canvas
             ctx.lineWidth = 40;
-            if(currentFrameClass === 'f-pink') {
+            if(currentFrame === 'f-star') {
+                ctx.strokeStyle = '#fdffb6';
+                ctx.setLineDash([10, 10]);
+                ctx.strokeRect(0,0, canvas.width, canvas.height);
+            } else if(currentFrame === 'f-heart') {
                 ctx.strokeStyle = '#ffafcc';
                 ctx.strokeRect(0,0, canvas.width, canvas.height);
-            } else if(currentFrameClass === 'f-blue') {
-                ctx.strokeStyle = '#a2d2ff';
-                ctx.setLineDash([20, 20]);
-                ctx.strokeRect(0,0, canvas.width, canvas.height);
-                ctx.setLineDash([]);
             } else {
                 ctx.strokeStyle = '#caffbf';
                 ctx.strokeRect(0,0, canvas.width, canvas.height);
-                // Tambah aksen garis
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 10;
-                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+                ctx.lineWidth = 2; ctx.strokeStyle = '#000';
+                ctx.strokeRect(40,40, canvas.width-80, canvas.height-80);
             }
 
-            // Tampilkan di Gallery
+            // Create Gallery Item
             const dataUrl = canvas.toDataURL('image/png');
-            const container = document.createElement('div');
-            container.className = 'captured-photo';
-            container.innerHTML = `<img src="${dataUrl}"><button onclick="this.parentElement.remove()" style="width:100%; font-size:0.6rem; padding:2px; margin-top:5px">DEL</button>`;
-            gallery.prepend(container);
+            const div = document.createElement('div');
+            div.className = 'polaroid';
+            // Random rotation for y2k look
+            div.style.setProperty('--r', (Math.random() * 6 - 3).toFixed(2));
+            
+            div.innerHTML = `
+                <img src="${dataUrl}">
+                <div class="pol-btns">
+                    <button onclick="downloadImg('${dataUrl}')">💾 DL</button>
+                    <button onclick="this.parentElement.parentElement.remove()">🗑️ DEL</button>
+                </div>
+            `;
+            gallery.prepend(div);
         });
 
-        // Download (Simpel: buka gambar baru)
-        document.getElementById('downloadAll').addEventListener('click', () => {
-            const images = document.querySelectorAll('.captured-photo img');
-            if(images.length === 0) return alert("Ambil foto dulu!");
-            
-            images.forEach((img, index) => {
-                const link = document.createElement('a');
-                link.download = `y2k-photo-${index+1}.png`;
-                link.href = img.src;
-                link.click();
-            });
-        });
+        function downloadImg(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `y2k_photo_${Date.now()}.png`;
+            a.click();
+        }
     </script>
 </body>
 </html>
