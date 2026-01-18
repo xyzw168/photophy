@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ Y2K PHOTOBOOTH ✧</title>
+    <title>✧ photophy ✧</title>
     <style>
         :root {
-            --pink: #ffafcc;
-            --blue: #a2d2ff;
-            --green: #caffbf;
-            --yellow: #fdffb6;
-            --purple: #cdb4db;
+            --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
         }
 
         body {
@@ -18,16 +14,9 @@
             background-image: radial-gradient(var(--pink) 1px, transparent 1px);
             background-size: 25px 25px;
             font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0;
         }
 
-        /* Flash Effect */
         #flash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; opacity: 0; pointer-events: none; z-index: 999;
@@ -35,62 +24,32 @@
         .flash-active { animation: flash-anim 0.3s ease-out; }
         @keyframes flash-anim { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-        /* Window Container */
         .window {
-            background: white;
-            border: 4px solid #000;
-            box-shadow: 10px 10px 0px #000;
-            width: 100%;
-            max-width: 500px;
-            position: relative;
+            background: white; border: 4px solid #000; box-shadow: 10px 10px 0px #000;
+            width: 100%; max-width: 500px;
         }
 
         .title-bar {
             background: linear-gradient(90deg, var(--purple), var(--pink));
-            color: white;
-            padding: 8px 12px;
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            border-bottom: 4px solid #000;
-            font-size: 14px;
+            color: white; padding: 8px; display: flex; justify-content: space-between;
+            font-weight: bold; border-bottom: 4px solid #000; font-size: 14px;
         }
 
-        .content { padding: 20px; text-align: center; }
+        .content { padding: 15px; text-align: center; }
 
-        /* Camera Box */
         #camera-box {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: #000;
-            border: 3px solid #000;
-            margin-bottom: 20px;
-            overflow: hidden;
+            position: relative; width: 100%; aspect-ratio: 4/3; 
+            background: #000; border: 3px solid #000; margin-bottom: 15px; overflow: hidden;
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-        /* Countdown Overlay */
         #countdown {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 100px;
-            color: white;
-            font-weight: bold;
-            z-index: 100;
-            text-shadow: 5px 5px 0px var(--pink);
-            display: none;
-            pointer-events: none;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 80px; color: white; font-weight: bold; z-index: 100;
+            text-shadow: 4px 4px 0px var(--pink); display: none;
         }
 
-        /* Frame Previews (Di atas Video) */
         .frame-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 10; border: 20px solid transparent; box-sizing: border-box;
@@ -99,194 +58,186 @@
         .f-heart { border-color: var(--pink); border-style: double; border-width: 25px; }
         .f-cyber { border-color: var(--green); outline: 2px dashed #000; border-width: 15px; }
 
-        /* Buttons & Selector */
-        .frame-selector { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        .btn-f { 
-            width: 45px; height: 45px; border: 3px solid #000; cursor: pointer; transition: 0.2s;
+        .label { font-size: 11px; font-weight: bold; margin: 10px 0 5px 0; text-transform: uppercase; }
+        
+        .selector-group { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; }
+        .option {
+            padding: 5px 10px; border: 2px solid #000; background: #eee;
+            cursor: pointer; font-size: 10px; font-weight: bold;
         }
-        .btn-f:hover { transform: scale(1.1); }
+        .option.active { background: var(--pink); color: white; }
 
         .main-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--green);
-            border: 4px solid #000;
-            font-weight: bold;
-            font-size: 18px;
-            cursor: pointer;
-            box-shadow: 5px 5px 0px #000;
-            font-family: 'Courier New', monospace;
+            width: 100%; padding: 15px; background: var(--green); border: 4px solid #000;
+            font-weight: bold; cursor: pointer; box-shadow: 5px 5px 0px #000;
         }
-        .main-btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0px #000; }
-        .main-btn:disabled { background: #ddd; cursor: not-allowed; }
 
         /* Gallery */
         #gallery {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-top: 40px;
-            width: 100%;
-            max-width: 500px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 30px; width: 100%; max-width: 500px;
         }
-
-        .polaroid {
-            background: white;
-            padding: 10px 10px 25px 10px;
-            border: 1px solid #ccc;
-            box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
-            transform: rotate(var(--r));
+        .result-card {
+            background: white; padding: 10px; border: 2px solid #000;
+            display: flex; flex-direction: column; align-items: center;
         }
-
-        .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 10px; }
-
-        .pol-btns { display: flex; justify-content: space-between; gap: 5px; }
-        .pol-btns button { 
-            flex: 1; padding: 5px; font-size: 10px; cursor: pointer; 
-            border: 2px solid #000; font-weight: bold; background: white;
-        }
+        .result-card img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; }
+        .btn-dl { background: var(--blue); border: 2px solid #000; cursor: pointer; font-size: 10px; width: 100%; padding: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="flash"></div>
+<div id="flash"></div>
 
-    <div class="window">
-        <div class="title-bar">
-            <span>📷 Y2K_PHOTO.EXE</span>
-            <span>💾 [?] [X]</span>
+<div class="window">
+    <div class="title-bar"><span>📸 photophy </span><span>[X]</span></div>
+    <div class="content">
+        <div id="camera-box">
+            <div id="countdown">3</div>
+            <video id="video" autoplay playsinline></video>
+            <div id="current-frame" class="frame-overlay f-star"></div>
         </div>
-        <div class="content">
-            <div id="camera-box">
-                <div id="countdown">3</div>
-                <video id="video" autoplay playsinline></video>
-                <div id="current-frame" class="frame-overlay f-star"></div>
-            </div>
 
-            <p style="font-size: 12px; font-weight: bold;">CHOOSE YOUR FRAME:</p>
-            <div class="frame-selector">
-                <div class="btn-f" style="background:var(--yellow);" onclick="setFrame('f-star')"></div>
-                <div class="btn-f" style="background:var(--pink);" onclick="setFrame('f-heart')"></div>
-                <div class="btn-f" style="background:var(--green);" onclick="setFrame('f-cyber')"></div>
-            </div>
-
-            <button id="snap" class="main-btn">✨ TAKE PHOTO (3s) ✨</button>
+        <div class="label">1. Pick Frame Color</div>
+        <div class="selector-group">
+            <div class="option active" onclick="setFrame('f-star', this)" style="border-color:var(--yellow)">STAR</div>
+            <div class="option" onclick="setFrame('f-heart', this)" style="border-color:var(--pink)">HEART</div>
+            <div class="option" onclick="setFrame('f-cyber', this)" style="border-color:var(--green)">CYBER</div>
         </div>
+
+        <div class="label">2. Pick Layout Template</div>
+        <div class="selector-group">
+            <div class="option active" onclick="setLayout('single', this)">SINGLE</div>
+            <div class="option" onclick="setLayout('strip', this)">STRIP (4)</div>
+            <div class="option" onclick="setLayout('grid', this)">GRID (2x2)</div>
+        </div>
+
+        <button id="snap" class="main-btn">✨ CAPTURE ✨</button>
     </div>
+</div>
 
-    <div id="gallery"></div>
+<div id="gallery"></div>
+<canvas id="canvas" style="display:none;"></canvas>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const gallery = document.getElementById('gallery');
+    const frameOverlay = document.getElementById('current-frame');
+    const countdownEl = document.getElementById('countdown');
+    const snapBtn = document.getElementById('snap');
     
-    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    let currentFrame = 'f-star';
+    let currentLayout = 'single';
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const gallery = document.getElementById('gallery');
-        const frameOverlay = document.getElementById('current-frame');
-        const flash = document.getElementById('flash');
-        const countdownEl = document.getElementById('countdown');
-        const snapBtn = document.getElementById('snap');
-        let currentFrame = 'f-star';
+    navigator.mediaDevices.getUserMedia({ video: true }).then(s => video.srcObject = s);
 
-        // Akses Kamera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => video.srcObject = stream)
-            .catch(err => alert("Kamera tidak aktif/diizinkan"));
+    function setFrame(f, el) {
+        currentFrame = f;
+        frameOverlay.className = 'frame-overlay ' + f;
+        updateActive(el);
+    }
 
-        function setFrame(f) {
-            frameOverlay.className = 'frame-overlay ' + f;
-            currentFrame = f;
+    function setLayout(l, el) {
+        currentLayout = l;
+        updateActive(el);
+    }
+
+    function updateActive(el) {
+        el.parentElement.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    snapBtn.addEventListener('click', async () => {
+        snapBtn.disabled = true;
+        
+        // Jika strip atau grid, kita perlu ambil 4 foto
+        let shotsNeeded = (currentLayout === 'single') ? 1 : 4;
+        let capturedImages = [];
+
+        for(let i=0; i < shotsNeeded; i++) {
+            await runCountdown(3);
+            capturedImages.push(captureToDataURL());
+            showFlash();
         }
 
-        // Event Klik Tombol Snap
-        snapBtn.addEventListener('click', () => {
-            let count = 3;
-            snapBtn.disabled = true;
+        renderFinalTemplate(capturedImages);
+        snapBtn.disabled = false;
+    });
+
+    function runCountdown(sec) {
+        return new Promise(res => {
+            let count = sec;
             countdownEl.style.display = 'block';
             countdownEl.innerText = count;
-
-            const timer = setInterval(() => {
+            let timer = setInterval(() => {
                 count--;
-                if (count === 0) {
+                if(count <= 0) {
                     clearInterval(timer);
                     countdownEl.style.display = 'none';
-                    snapBtn.disabled = false;
-                    executeSnap(); // Ambil Foto
-                } else {
-                    countdownEl.innerText = count;
-                }
-            }, 1000);
+                    res();
+                } else { countdownEl.innerText = count; }
+            }, 800);
         });
+    }
 
-        function executeSnap() {
-            // Flash effect
-            flash.classList.add('flash-active');
-            setTimeout(() => flash.classList.remove('flash-active'), 300);
+    function captureToDataURL() {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 640; tempCanvas.height = 480;
+        const tCtx = tempCanvas.getContext('2d');
+        tCtx.translate(640, 0); tCtx.scale(-1, 1);
+        tCtx.drawImage(video, 0, 0, 640, 480);
+        return tempCanvas;
+    }
 
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function showFlash() {
+        document.getElementById('flash').classList.add('flash-active');
+        setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300);
+    }
 
-            // 1. Gambar Video (Mirror)
-            ctx.save();
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            ctx.restore();
-
-            // 2. Gambar Frame (Logika Favorite Kamu)
-            ctx.lineWidth = 30;
-            ctx.setLineDash([]);
-
-            if(currentFrame === 'f-star') {
-                ctx.strokeStyle = '#fdffb6'; 
-                ctx.setLineDash([15, 15]); 
-                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
-                ctx.setLineDash([]);
-                ctx.font = "40px serif";
-                ctx.fillText("★", canvas.width - 60, canvas.height - 40);
-            } 
-            else if(currentFrame === 'f-heart') {
-                ctx.strokeStyle = '#ffafcc';
-                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
-                ctx.lineWidth = 5;
-                ctx.strokeStyle = '#fff';
-                ctx.strokeRect(30, 30, canvas.width-60, canvas.height-60);
-                ctx.font = "40px serif";
-                ctx.fillText("💖", 40, 70);
-            } 
-            else if(currentFrame === 'f-cyber') {
-                ctx.strokeStyle = '#caffbf';
-                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#000';
-                ctx.setLineDash([5, 5]);
-                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
-            }
-
-            // 3. Render ke Gallery
-            const dataUrl = canvas.toDataURL('image/png');
-            const div = document.createElement('div');
-            div.className = 'polaroid';
-            // Rotasi acak ala polaroid berserakan
-            const randomRot = (Math.random() * 6 - 3).toFixed(2) + 'deg';
-            div.style.setProperty('--r', randomRot);
-            
-            div.innerHTML = `
-                <img src="${dataUrl}">
-                <div class="pol-btns">
-                    <button style="background:var(--blue)" onclick="downloadImg('${dataUrl}')">💾 DL</button>
-                    <button style="background:var(--pink)" onclick="this.parentElement.parentElement.remove()">🗑️ DEL</button>
-                </div>
-            `;
-            gallery.prepend(div);
+    function renderFinalTemplate(imgs) {
+        const ctx = canvas.getContext('2d');
+        
+        if(currentLayout === 'single') {
+            canvas.width = 640; canvas.height = 480;
+            drawPhotoWithFrame(ctx, imgs[0], 0, 0, 640, 480);
+        } else if(currentLayout === 'strip') {
+            canvas.width = 300; canvas.height = 1000;
+            ctx.fillStyle = "white"; ctx.fillRect(0,0,300,1000);
+            imgs.forEach((img, i) => drawPhotoWithFrame(ctx, img, 20, 20 + (i*240), 260, 220));
+        } else if(currentLayout === 'grid') {
+            canvas.width = 600; canvas.height = 600;
+            ctx.fillStyle = "white"; ctx.fillRect(0,0,600,600);
+            drawPhotoWithFrame(ctx, imgs[0], 20, 20, 270, 270);
+            drawPhotoWithFrame(ctx, imgs[1], 310, 20, 270, 270);
+            drawPhotoWithFrame(ctx, imgs[2], 20, 310, 270, 270);
+            drawPhotoWithFrame(ctx, imgs[3], 310, 310, 270, 270);
         }
 
-        function downloadImg(url) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `y2k_snap_${Date.now()}.png`;
-            a.click();
+        const finalUrl = canvas.toDataURL('image/png');
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.innerHTML = `<img src="${finalUrl}"><button class="btn-dl" onclick="downloadImg('${finalUrl}')">💾 SAVE RESULT</button>`;
+        gallery.prepend(card);
+    }
+
+    function drawPhotoWithFrame(ctx, img, x, y, w, h) {
+        ctx.drawImage(img, x, y, w, h);
+        ctx.lineWidth = 15;
+        ctx.setLineDash([]);
+        if(currentFrame === 'f-star') {
+            ctx.strokeStyle = '#fdffb6'; ctx.setLineDash([10, 10]);
+        } else if(currentFrame === 'f-heart') {
+            ctx.strokeStyle = '#ffafcc';
+        } else {
+            ctx.strokeStyle = '#caffbf';
         }
-    </script>
+        ctx.strokeRect(x+7, y+7, w-14, h-14);
+    }
+
+    function downloadImg(url) {
+        const a = document.createElement('a');
+        a.href = url; a.download = `y2k_bundle_${Date.now()}.png`; a.click();
+    }
+</script>
 </body>
 </html>
