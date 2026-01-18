@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ photophy ✧</title>
+    <title>✧ Y2K PHOTOBOOTH PRO ✧</title>
     <style>
         :root {
-            --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
+            --pink: #ffafcc;
+            --blue: #a2d2ff;
+            --green: #caffbf;
+            --yellow: #fdffb6;
+            --purple: #cdb4db;
         }
 
         body {
@@ -14,9 +18,16 @@
             background-image: radial-gradient(var(--pink) 1px, transparent 1px);
             background-size: 25px 25px;
             font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
+        /* Flash Effect */
         #flash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; opacity: 0; pointer-events: none; z-index: 999;
@@ -24,30 +35,58 @@
         .flash-active { animation: flash-anim 0.3s ease-out; }
         @keyframes flash-anim { 0% { opacity: 1; } 100% { opacity: 0; } }
 
+        /* Window Container */
         .window {
-            background: white; border: 4px solid #000; box-shadow: 10px 10px 0px #000;
-            width: 100%; max-width: 500px;
+            background: white;
+            border: 4px solid #000;
+            box-shadow: 10px 10px 0px #000;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
         }
 
         .title-bar {
             background: linear-gradient(90deg, var(--purple), var(--pink));
-            color: white; padding: 8px; display: flex; justify-content: space-between;
-            font-weight: bold; border-bottom: 4px solid #000; font-size: 14px;
+            color: white;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            border-bottom: 4px solid #000;
+            font-size: 14px;
         }
 
-        .content { padding: 15px; text-align: center; }
+        .content { padding: 20px; text-align: center; }
 
+        /* Camera Box */
         #camera-box {
-            position: relative; width: 100%; aspect-ratio: 4/3; 
-            background: #000; border: 3px solid #000; margin-bottom: 15px; overflow: hidden;
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border: 3px solid #000;
+            margin-bottom: 15px;
+            overflow: hidden;
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
 
         #countdown {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 80px; color: white; font-weight: bold; z-index: 100;
-            text-shadow: 4px 4px 0px var(--pink); display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            color: white;
+            font-weight: bold;
+            z-index: 100;
+            text-shadow: 5px 5px 0px var(--pink);
+            display: none;
+            pointer-events: none;
         }
 
         .frame-overlay {
@@ -58,186 +97,237 @@
         .f-heart { border-color: var(--pink); border-style: double; border-width: 25px; }
         .f-cyber { border-color: var(--green); outline: 2px dashed #000; border-width: 15px; }
 
-        .label { font-size: 11px; font-weight: bold; margin: 10px 0 5px 0; text-transform: uppercase; }
-        
+        .label { font-size: 11px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
+
+        /* Selectors */
         .selector-group { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; }
-        .option {
+        
+        .btn-f { width: 35px; height: 35px; border: 3px solid #000; cursor: pointer; }
+        .btn-f.active { outline: 3px solid #000; transform: scale(1.1); }
+
+        .btn-layout {
             padding: 5px 10px; border: 2px solid #000; background: #eee;
-            cursor: pointer; font-size: 10px; font-weight: bold;
+            cursor: pointer; font-size: 10px; font-weight: bold; font-family: inherit;
         }
-        .option.active { background: var(--pink); color: white; }
+        .btn-layout.active { background: var(--pink); color: white; }
 
         .main-btn {
-            width: 100%; padding: 15px; background: var(--green); border: 4px solid #000;
-            font-weight: bold; cursor: pointer; box-shadow: 5px 5px 0px #000;
+            width: 100%;
+            padding: 15px;
+            background: var(--green);
+            border: 4px solid #000;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Courier New', monospace;
         }
+        .main-btn:disabled { background: #ddd; cursor: not-allowed; box-shadow: none; transform: translate(3px,3px); }
 
         /* Gallery */
         #gallery {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 30px; width: 100%; max-width: 500px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 500px;
         }
-        .result-card {
-            background: white; padding: 10px; border: 2px solid #000;
-            display: flex; flex-direction: column; align-items: center;
+
+        .polaroid {
+            background: white;
+            padding: 10px;
+            border: 2px solid #000;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.1);
+            transform: rotate(var(--r));
         }
-        .result-card img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; }
-        .btn-dl { background: var(--blue); border: 2px solid #000; cursor: pointer; font-size: 10px; width: 100%; padding: 5px; font-weight: bold; }
+
+        .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 10px; }
+        .pol-btns button { width: 100%; padding: 5px; font-size: 10px; cursor: pointer; border: 2px solid #000; font-weight: bold; margin-bottom: 3px;}
     </style>
 </head>
 <body>
 
-<div id="flash"></div>
+    <div id="flash"></div>
 
-<div class="window">
-    <div class="title-bar"><span>📸 photophy </span><span>[X]</span></div>
-    <div class="content">
-        <div id="camera-box">
-            <div id="countdown">3</div>
-            <video id="video" autoplay playsinline></video>
-            <div id="current-frame" class="frame-overlay f-star"></div>
+    <div class="window">
+        <div class="title-bar">
+            <span>📷 Y2K_PHOTO_STRIP.EXE</span>
+            <span>💾 [?] [X]</span>
         </div>
+        <div class="content">
+            <div id="camera-box">
+                <div id="countdown">3</div>
+                <video id="video" autoplay playsinline></video>
+                <div id="current-frame" class="frame-overlay f-star"></div>
+            </div>
 
-        <div class="label">1. Pick Frame Color</div>
-        <div class="selector-group">
-            <div class="option active" onclick="setFrame('f-star', this)" style="border-color:var(--yellow)">STAR</div>
-            <div class="option" onclick="setFrame('f-heart', this)" style="border-color:var(--pink)">HEART</div>
-            <div class="option" onclick="setFrame('f-cyber', this)" style="border-color:var(--green)">CYBER</div>
+            <div class="label">Step 1: Frame Color</div>
+            <div class="selector-group">
+                <div class="btn-f active" style="background:var(--yellow);" onclick="setFrame('f-star', this)"></div>
+                <div class="btn-f" style="background:var(--pink);" onclick="setFrame('f-heart', this)"></div>
+                <div class="btn-f" style="background:var(--green);" onclick="setFrame('f-cyber', this)"></div>
+            </div>
+
+            <div class="label">Step 2: Layout Template</div>
+            <div class="selector-group">
+                <button class="btn-layout active" onclick="setLayout('single', this)">SINGLE</button>
+                <button class="btn-layout" onclick="setLayout('strip', this)">STRIP (x3)</button>
+                <button class="btn-layout" onclick="setLayout('grid', this)">GRID (2x2)</button>
+            </div>
+
+            <button id="snap" class="main-btn">✨ CAPTURE ✨</button>
         </div>
-
-        <div class="label">2. Pick Layout Template</div>
-        <div class="selector-group">
-            <div class="option active" onclick="setLayout('single', this)">SINGLE</div>
-            <div class="option" onclick="setLayout('strip', this)">STRIP (4)</div>
-            <div class="option" onclick="setLayout('grid', this)">GRID (2x2)</div>
-        </div>
-
-        <button id="snap" class="main-btn">✨ CAPTURE ✨</button>
     </div>
-</div>
 
-<div id="gallery"></div>
-<canvas id="canvas" style="display:none;"></canvas>
-
-<script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const gallery = document.getElementById('gallery');
-    const frameOverlay = document.getElementById('current-frame');
-    const countdownEl = document.getElementById('countdown');
-    const snapBtn = document.getElementById('snap');
+    <div id="gallery"></div>
     
-    let currentFrame = 'f-star';
-    let currentLayout = 'single';
+    <canvas id="canvas" style="display:none;"></canvas>
 
-    navigator.mediaDevices.getUserMedia({ video: true }).then(s => video.srcObject = s);
-
-    function setFrame(f, el) {
-        currentFrame = f;
-        frameOverlay.className = 'frame-overlay ' + f;
-        updateActive(el);
-    }
-
-    function setLayout(l, el) {
-        currentLayout = l;
-        updateActive(el);
-    }
-
-    function updateActive(el) {
-        el.parentElement.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    snapBtn.addEventListener('click', async () => {
-        snapBtn.disabled = true;
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const gallery = document.getElementById('gallery');
+        const frameOverlay = document.getElementById('current-frame');
+        const flash = document.getElementById('flash');
+        const countdownEl = document.getElementById('countdown');
+        const snapBtn = document.getElementById('snap');
         
-        // Jika strip atau grid, kita perlu ambil 4 foto
-        let shotsNeeded = (currentLayout === 'single') ? 1 : 4;
-        let capturedImages = [];
+        let currentFrame = 'f-star';
+        let currentLayout = 'single';
 
-        for(let i=0; i < shotsNeeded; i++) {
-            await runCountdown(3);
-            capturedImages.push(captureToDataURL());
-            showFlash();
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => video.srcObject = stream);
+
+        function setFrame(f, el) {
+            currentFrame = f;
+            frameOverlay.className = 'frame-overlay ' + f;
+            document.querySelectorAll('.btn-f').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        renderFinalTemplate(capturedImages);
-        snapBtn.disabled = false;
-    });
+        function setLayout(l, el) {
+            currentLayout = l;
+            document.querySelectorAll('.btn-layout').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
 
-    function runCountdown(sec) {
-        return new Promise(res => {
-            let count = sec;
-            countdownEl.style.display = 'block';
-            countdownEl.innerText = count;
-            let timer = setInterval(() => {
-                count--;
-                if(count <= 0) {
-                    clearInterval(timer);
-                    countdownEl.style.display = 'none';
-                    res();
-                } else { countdownEl.innerText = count; }
-            }, 800);
+        snapBtn.addEventListener('click', async () => {
+            snapBtn.disabled = true;
+            let capturedFrames = [];
+            
+            // Logika baru: Jika strip ambil 3, jika grid ambil 4, jika single ambil 1.
+            let totalShots = (currentLayout === 'single') ? 1 : (currentLayout === 'strip' ? 3 : 4);
+
+            for(let i = 0; i < totalShots; i++) {
+                await runCountdown(3);
+                capturedFrames.push(grabFrame());
+                showFlash();
+            }
+
+            renderFinal(capturedFrames);
+            snapBtn.disabled = false;
         });
-    }
 
-    function captureToDataURL() {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 640; tempCanvas.height = 480;
-        const tCtx = tempCanvas.getContext('2d');
-        tCtx.translate(640, 0); tCtx.scale(-1, 1);
-        tCtx.drawImage(video, 0, 0, 640, 480);
-        return tempCanvas;
-    }
-
-    function showFlash() {
-        document.getElementById('flash').classList.add('flash-active');
-        setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300);
-    }
-
-    function renderFinalTemplate(imgs) {
-        const ctx = canvas.getContext('2d');
-        
-        if(currentLayout === 'single') {
-            canvas.width = 640; canvas.height = 480;
-            drawPhotoWithFrame(ctx, imgs[0], 0, 0, 640, 480);
-        } else if(currentLayout === 'strip') {
-            canvas.width = 300; canvas.height = 1000;
-            ctx.fillStyle = "white"; ctx.fillRect(0,0,300,1000);
-            imgs.forEach((img, i) => drawPhotoWithFrame(ctx, img, 20, 20 + (i*240), 260, 220));
-        } else if(currentLayout === 'grid') {
-            canvas.width = 600; canvas.height = 600;
-            ctx.fillStyle = "white"; ctx.fillRect(0,0,600,600);
-            drawPhotoWithFrame(ctx, imgs[0], 20, 20, 270, 270);
-            drawPhotoWithFrame(ctx, imgs[1], 310, 20, 270, 270);
-            drawPhotoWithFrame(ctx, imgs[2], 20, 310, 270, 270);
-            drawPhotoWithFrame(ctx, imgs[3], 310, 310, 270, 270);
+        function runCountdown(sec) {
+            return new Promise(resolve => {
+                let count = sec;
+                countdownEl.style.display = 'block';
+                countdownEl.innerText = count;
+                let timer = setInterval(() => {
+                    count--;
+                    if(count === 0) {
+                        clearInterval(timer);
+                        countdownEl.style.display = 'none';
+                        resolve();
+                    } else { countdownEl.innerText = count; }
+                }, 1000);
+            });
         }
 
-        const finalUrl = canvas.toDataURL('image/png');
-        const card = document.createElement('div');
-        card.className = 'result-card';
-        card.innerHTML = `<img src="${finalUrl}"><button class="btn-dl" onclick="downloadImg('${finalUrl}')">💾 SAVE RESULT</button>`;
-        gallery.prepend(card);
-    }
-
-    function drawPhotoWithFrame(ctx, img, x, y, w, h) {
-        ctx.drawImage(img, x, y, w, h);
-        ctx.lineWidth = 15;
-        ctx.setLineDash([]);
-        if(currentFrame === 'f-star') {
-            ctx.strokeStyle = '#fdffb6'; ctx.setLineDash([10, 10]);
-        } else if(currentFrame === 'f-heart') {
-            ctx.strokeStyle = '#ffafcc';
-        } else {
-            ctx.strokeStyle = '#caffbf';
+        function grabFrame() {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 640;
+            tempCanvas.height = 480;
+            const tCtx = tempCanvas.getContext('2d');
+            tCtx.translate(640, 0);
+            tCtx.scale(-1, 1);
+            tCtx.drawImage(video, 0, 0, 640, 480);
+            return tempCanvas;
         }
-        ctx.strokeRect(x+7, y+7, w-14, h-14);
-    }
 
-    function downloadImg(url) {
-        const a = document.createElement('a');
-        a.href = url; a.download = `y2k_bundle_${Date.now()}.png`; a.click();
-    }
-</script>
+        function showFlash() {
+            flash.classList.add('flash-active');
+            setTimeout(() => flash.classList.remove('flash-active'), 300);
+        }
+
+        function renderFinal(imgs) {
+            const ctx = canvas.getContext('2d');
+            
+            if(currentLayout === 'single') {
+                canvas.width = 640; canvas.height = 480;
+                drawWithFrame(ctx, imgs[0], 0, 0, 640, 480);
+            } 
+            else if(currentLayout === 'strip') {
+                // Canvas lebih pendek karena hanya 3 foto
+                canvas.width = 320; canvas.height = 760;
+                ctx.fillStyle = "white"; ctx.fillRect(0,0,320,760);
+                imgs.forEach((img, i) => drawWithFrame(ctx, img, 20, 20 + (i*240), 280, 210));
+            } 
+            else if(currentLayout === 'grid') {
+                canvas.width = 600; canvas.height = 600;
+                ctx.fillStyle = "white"; ctx.fillRect(0,0,600,600);
+                drawWithFrame(ctx, imgs[0], 20, 20, 270, 270);
+                drawWithFrame(ctx, imgs[1], 310, 20, 270, 270);
+                drawWithFrame(ctx, imgs[2], 20, 310, 270, 270);
+                drawWithFrame(ctx, imgs[3], 310, 310, 270, 270);
+            }
+
+            const dataUrl = canvas.toDataURL('image/png');
+            const div = document.createElement('div');
+            div.className = 'polaroid';
+            div.style.setProperty('--r', (Math.random() * 4 - 2) + 'deg');
+            div.innerHTML = `
+                <img src="${dataUrl}">
+                <div class="pol-btns">
+                    <button style="background:var(--blue)" onclick="downloadImg('${dataUrl}')">💾 DOWNLOAD</button>
+                    <button style="background:var(--pink)" onclick="this.parentElement.parentElement.remove()">🗑️ DELETE</button>
+                </div>
+            `;
+            gallery.prepend(div);
+        }
+
+        function drawWithFrame(ctx, img, x, y, w, h) {
+            ctx.drawImage(img, x, y, w, h);
+            ctx.lineWidth = w * 0.05;
+            ctx.setLineDash([]);
+            
+            if(currentFrame === 'f-star') {
+                ctx.strokeStyle = '#fdffb6'; 
+                ctx.setLineDash([10, 10]);
+                ctx.strokeRect(x + (ctx.lineWidth/2), y + (ctx.lineWidth/2), w - ctx.lineWidth, h - ctx.lineWidth);
+                ctx.setLineDash([]);
+                ctx.fillStyle = "#000"; ctx.font = (w/10) + "px serif";
+                ctx.fillText("★", x + w - (w/8), y + h - (h/15));
+            } else if(currentFrame === 'f-heart') {
+                ctx.strokeStyle = '#ffafcc';
+                ctx.strokeRect(x + (ctx.lineWidth/2), y + (ctx.lineWidth/2), w - ctx.lineWidth, h - ctx.lineWidth);
+                ctx.lineWidth = 2; ctx.strokeStyle = '#fff';
+                ctx.strokeRect(x + 10, y + 10, w - 20, h - 20);
+            } else {
+                ctx.strokeStyle = '#caffbf';
+                ctx.strokeRect(x + (ctx.lineWidth/2), y + (ctx.lineWidth/2), w - ctx.lineWidth, h - ctx.lineWidth);
+                ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.setLineDash([5, 5]);
+                ctx.strokeRect(x + (ctx.lineWidth/2), y + (ctx.lineWidth/2), w - ctx.lineWidth, h - ctx.lineWidth);
+            }
+        }
+
+        function downloadImg(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `y2k_snap_${Date.now()}.png`;
+            a.click();
+        }
+    </script>
 </body>
 </html>
