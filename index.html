@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ Y2K CUSTOM BOOTH ✧</title>
+    <title>✧ Y2K PHOTOBOOTH CUSTOM ✧</title>
     <style>
         :root {
             --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
@@ -17,7 +17,6 @@
             display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0;
         }
 
-        /* Flash */
         #flash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; opacity: 0; pointer-events: none; z-index: 999;
@@ -43,13 +42,21 @@
             background: #000; border: 3px solid #000; margin-bottom: 15px; overflow: hidden;
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.3s; }
 
-        /* Overlay Frame di Kamera */
-        #frame-img-overlay {
+        /* Overlay untuk Frame Gambar */
+        #frame-img-display {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 10; object-fit: fill;
+            pointer-events: none; z-index: 11; display: none; object-fit: fill;
         }
+
+        .frame-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10; border: 15px solid transparent; box-sizing: border-box;
+        }
+        .f-star { border-color: var(--yellow); border-style: dotted; }
+        .f-heart { border-color: var(--pink); border-style: double; border-width: 20px; }
+        .f-cyber { border-color: var(--green); outline: 2px dashed #000; border-width: 12px; }
 
         #countdown {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -60,16 +67,16 @@
         .label { font-size: 10px; font-weight: bold; margin: 8px 0 4px 0; text-transform: uppercase; }
         .selector-group { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
         
-        .btn-design {
-            width: 60px; height: 60px; border: 2px solid #000; background: #eee;
-            cursor: pointer; font-size: 9px; font-weight: bold; overflow: hidden;
+        .btn-f { width: 30px; height: 30px; border: 2px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: bold; text-align: center; line-height: 1; }
+        .btn-option {
+            padding: 4px 8px; border: 2px solid #000; background: #eee;
+            cursor: pointer; font-size: 9px; font-weight: bold; font-family: inherit;
         }
-        .btn-design img { width: 100%; height: 100%; object-fit: cover; }
-        .active { border-color: var(--pink) !important; outline: 3px solid var(--pink); }
+        .active { background: var(--pink) !important; color: white; transform: scale(1.05); }
 
         .main-btn {
             width: 100%; padding: 12px; background: var(--green); border: 3px solid #000;
-            font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 4px 4px 0px #000;
+            font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 4px 4px 0px #000; margin-top: 10px;
         }
 
         #gallery {
@@ -81,8 +88,8 @@
             background: white; padding: 8px; border: 2px solid #000;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.1); transform: rotate(var(--r));
         }
-        .polaroid img { width: 100%; margin-bottom: 8px; }
-        .pol-btns button { width: 100%; padding: 4px; font-size: 9px; cursor: pointer; border: 1px solid #000; font-weight: bold; }
+        .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; }
+        .pol-btns button { width: 100%; padding: 4px; font-size: 9px; cursor: pointer; border: 1px solid #000; font-weight: bold; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -90,28 +97,40 @@
     <div id="flash"></div>
 
     <div class="window">
-        <div class="title-bar"><span>✨ Y2K_DESIGN_BOOTH.EXE</span><span>[X]</span></div>
+        <div class="title-bar"><span>📸 Y2K_CUSTOM_FRAME.EXE</span><span>[X]</span></div>
         <div class="content">
             <div id="camera-box">
                 <div id="countdown">3</div>
                 <video id="video" autoplay playsinline></video>
-                <img id="frame-img-overlay" src="">
+                <div id="current-frame" class="frame-overlay f-star"></div>
+                <img id="frame-img-display" src="">
             </div>
 
-            <div class="label">Choose Cute Design</div>
+            <div class="label">1. Frame Design</div>
             <div class="selector-group">
-                <div class="btn-design active" onclick="changeDesign('', this)">
-                    <div style="padding:10px">No Frame</div>
-                </div>
-                <div class="btn-design" onclick="changeDesign('https://ibb.co.com/qMThzSkz', this)">
-                    <img src="https://ibb.co.com/qMThzSkz">
-                </div>
-                <div class="btn-design" onclick="changeDesign('https://ibb.co.com/qMThzSkz', this)">
-                    <img src="https://ibb.co.com/qMThzSkz">
-                </div>
+                <div class="btn-f active" style="background:var(--yellow);" onclick="setFrame('f-star', this)"></div>
+                <div class="btn-f" style="background:var(--pink);" onclick="setFrame('f-heart', this)"></div>
+                <div class="btn-f" style="background:var(--green);" onclick="setFrame('f-cyber', this)"></div>
+                <div class="btn-f" style="background:white; border-color:var(--purple)" onclick="setCustomFrame('https://i.ibb.co/vz6V0vD/frame1.png', this)">OVAL FRAME</div>
             </div>
 
-            <button id="snap" class="main-btn">✨ CAPTURE ✨</button>
+            <div class="label">2. Aesthetic Filter</div>
+            <div class="selector-group">
+                <button class="btn-option active" onclick="setFilter('none', this)">NORMAL</button>
+                <button class="btn-option" onclick="setFilter('vintage', this)">VINTAGE</button>
+                <button class="btn-option" onclick="setFilter('dreamy', this)">DREAMY</button>
+                <button class="btn-option" onclick="setFilter('cold', this)">COLD</button>
+                <button class="btn-option" onclick="setFilter('bw', this)">B&W</button>
+            </div>
+
+            <div class="label">3. Layout</div>
+            <div class="selector-group">
+                <button class="btn-option active" onclick="setLayout('single', this)">SINGLE</button>
+                <button class="btn-option" onclick="setLayout('strip', this)">STRIP (x3)</button>
+                <button class="btn-option" onclick="setLayout('grid', this)">GRID (2x2)</button>
+            </div>
+
+            <button id="snap" class="main-btn">✨ TAKE PHOTO ✨</button>
         </div>
     </div>
 
@@ -122,26 +141,75 @@
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const gallery = document.getElementById('gallery');
-        const frameOverlay = document.getElementById('frame-img-overlay');
+        const frameOverlay = document.getElementById('current-frame');
+        const frameImgDisplay = document.getElementById('frame-img-display');
+        const flash = document.getElementById('flash');
         const countdownEl = document.getElementById('countdown');
         const snapBtn = document.getElementById('snap');
         
-        let selectedFrameURL = '';
+        let currentFrame = 'f-star';
+        let isCustomFrame = false;
+        let customFrameSrc = '';
+        let currentLayout = 'single';
+        let currentFilter = 'none';
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-            .then(stream => video.srcObject = stream);
+        const filters = {
+            none: '',
+            vintage: 'sepia(0.4) contrast(1.1) brightness(1.1)',
+            dreamy: 'saturate(1.4) blur(0.4px) brightness(1.1) hue-rotate(-5deg)',
+            cold: 'contrast(1.1) brightness(1.1) hue-rotate(180deg) saturate(0.7)',
+            bw: 'grayscale(1) contrast(1.2)'
+        };
 
-        function changeDesign(url, el) {
-            selectedFrameURL = url;
-            frameOverlay.src = url;
-            document.querySelectorAll('.btn-design').forEach(b => b.classList.remove('active'));
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user", aspectRatio: { ideal: 1.333333 } } 
+        }).then(stream => video.srcObject = stream);
+
+        function setFrame(f, el) {
+            isCustomFrame = false;
+            currentFrame = f;
+            frameImgDisplay.style.display = 'none';
+            frameOverlay.style.display = 'block';
+            frameOverlay.className = 'frame-overlay ' + f;
+            updateActive(el, '.btn-f');
+        }
+
+        function setCustomFrame(url, el) {
+            isCustomFrame = true;
+            customFrameSrc = url;
+            frameOverlay.style.display = 'none';
+            frameImgDisplay.style.display = 'block';
+            frameImgDisplay.src = url;
+            updateActive(el, '.btn-f');
+        }
+
+        function setFilter(f, el) {
+            currentFilter = f;
+            video.style.filter = filters[f];
+            updateActive(el, '.btn-option');
+        }
+
+        function setLayout(l, el) {
+            currentLayout = l;
+            updateActive(el, '.btn-option');
+        }
+
+        function updateActive(el, selector) {
+            el.parentElement.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
             el.classList.add('active');
         }
 
         snapBtn.addEventListener('click', async () => {
             snapBtn.disabled = true;
-            await runCountdown(3);
-            executeCapture();
+            let capturedFrames = [];
+            let totalShots = (currentLayout === 'single') ? 1 : (currentLayout === 'strip' ? 3 : 4);
+
+            for(let i = 0; i < totalShots; i++) {
+                await runCountdown(3);
+                capturedFrames.push(grabFrame());
+                showFlash();
+            }
+            renderFinal(capturedFrames);
             snapBtn.disabled = false;
         });
 
@@ -158,18 +226,18 @@
             });
         }
 
-        function executeCapture() {
-            // Flash Effect
-            document.getElementById('flash').classList.add('flash-active');
-            setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300);
+        function grabFrame() {
+            const tempCanvas = document.createElement('canvas');
+            const targetWidth = 640;
+            const targetHeight = 480;
+            tempCanvas.width = targetWidth;
+            tempCanvas.height = targetHeight;
+            const tCtx = tempCanvas.getContext('2d');
+            
+            tCtx.filter = filters[currentFilter];
 
-            const ctx = canvas.getContext('2d');
-            canvas.width = 640;
-            canvas.height = 480;
-
-            // 1. Gambar Foto (Mirror & Crop Tengah agar tidak penyet)
             const videoAspect = video.videoWidth / video.videoHeight;
-            const targetAspect = 640 / 480;
+            const targetAspect = targetWidth / targetHeight;
             let sx, sy, sw, sh;
 
             if (videoAspect > targetAspect) {
@@ -180,39 +248,57 @@
                 sx = 0; sy = (video.videoHeight - sh) / 2;
             }
 
-            ctx.save();
-            ctx.translate(640, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, sx, sy, sw, sh, 0, 0, 640, 480);
-            ctx.restore();
-
-            // 2. Timpa dengan Frame PNG jika ada
-            if (selectedFrameURL) {
-                const imgFrame = new Image();
-                imgFrame.crossOrigin = "anonymous";
-                imgFrame.src = selectedFrameURL;
-                imgFrame.onload = () => {
-                    ctx.drawImage(imgFrame, 0, 0, 640, 480);
-                    renderToGallery();
-                };
-            } else {
-                renderToGallery();
-            }
+            tCtx.translate(targetWidth, 0);
+            tCtx.scale(-1, 1);
+            tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+            return tempCanvas;
         }
 
-        function renderToGallery() {
+        function showFlash() {
+            flash.classList.add('flash-active');
+            setTimeout(() => flash.classList.remove('flash-active'), 300);
+        }
+
+        function renderFinal(imgs) {
+            const ctx = canvas.getContext('2d');
+            if(currentLayout === 'single') {
+                canvas.width = 640; canvas.height = 480;
+                drawPhotoWithFrame(ctx, imgs[0], 0, 0, 640, 480);
+            } else if(currentLayout === 'strip') {
+                canvas.width = 320; canvas.height = 760;
+                ctx.fillStyle = "white"; ctx.fillRect(0,0,320,760);
+                imgs.forEach((img, i) => drawPhotoWithFrame(ctx, img, 20, 20 + (i*240), 280, 210));
+            } else if(currentLayout === 'grid') {
+                canvas.width = 600; canvas.height = 600;
+                ctx.fillStyle = "white"; ctx.fillRect(0,0,600,600);
+                drawPhotoWithFrame(ctx, imgs[0], 20, 20, 270, 270);
+                drawPhotoWithFrame(ctx, imgs[1], 310, 20, 270, 270);
+                drawPhotoWithFrame(ctx, imgs[2], 20, 310, 270, 270);
+                drawPhotoWithFrame(ctx, imgs[3], 310, 310, 270, 270);
+            }
+            
             const dataUrl = canvas.toDataURL('image/png');
             const div = document.createElement('div');
             div.className = 'polaroid';
             div.style.setProperty('--r', (Math.random() * 4 - 2) + 'deg');
-            div.innerHTML = `
-                <img src="${dataUrl}">
-                <div class="pol-btns">
-                    <button style="background:var(--blue)" onclick="downloadImg('${dataUrl}')">💾 SAVE</button>
-                    <button style="background:var(--pink)" onclick="this.parentElement.parentElement.remove()">🗑️ DEL</button>
-                </div>
-            `;
+            div.innerHTML = `<img src="${dataUrl}"><div class="pol-btns"><button style="background:var(--blue)" onclick="downloadImg('${dataUrl}')">💾 SAVE</button><button style="background:var(--pink)" onclick="this.parentElement.parentElement.remove()">🗑️ DEL</button></div>`;
             gallery.prepend(div);
+        }
+
+        function drawPhotoWithFrame(ctx, img, x, y, w, h) {
+            ctx.drawImage(img, x, y, w, h);
+            
+            if (isCustomFrame) {
+                // Gambar Frame PNG di atas foto secara sinkron
+                ctx.drawImage(frameImgDisplay, x, y, w, h);
+            } else {
+                ctx.lineWidth = w * 0.05; ctx.setLineDash([]);
+                ctx.strokeStyle = (currentFrame === 'f-star') ? '#fdffb6' : (currentFrame === 'f-heart' ? '#ffafcc' : '#caffbf');
+                ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
+                if(currentFrame === 'f-star') {
+                    ctx.fillStyle="#000"; ctx.font = (w/12)+"px serif"; ctx.fillText("★", x+w-30, y+h-20);
+                }
+            }
         }
 
         function downloadImg(url) {
