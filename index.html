@@ -85,6 +85,15 @@
         }
         .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; }
         .pol-btns button { width: 100%; padding: 4px; font-size: 9px; cursor: pointer; border: 1px solid #000; font-weight: bold; margin-bottom: 2px; }
+
+        .sticker {
+    position: absolute; cursor: move; font-size: 40px; 
+    user-select: none; z-index: 20; touch-action: none;
+}
+#current-frame-img {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 15; object-fit: contain;
+}
     </style>
 </head>
 <body>
@@ -122,6 +131,21 @@
                 <button class="btn-option" onclick="setLayout('strip', this)">STRIP (x3)</button>
                 <button class="btn-option" onclick="setLayout('grid', this)">GRID (2x2)</button>
             </div>
+
+            <div class="label">Design Frame</div>
+<div class="selector-group">
+    <button class="btn-option active" onclick="setCustomFrame('none', this)">NONE</button>
+    <button class="btn-option" onclick="setCustomFrame('https://i.ibb.co.com/B285BSFX/photophy-2.png', this)">CUTE</button>
+    <button class="btn-option" onclick="setCustomFrame('https://i.ibb.co.com/B285BSFX/photophy-2.png', this)">RETRO</button>
+</div>
+
+<div class="label">Add Sticker</div>
+<div class="selector-group">
+    <button class="btn-option" onclick="addSticker('⭐')">⭐</button>
+    <button class="btn-option" onclick="addSticker('💖')">💖</button>
+    <button class="btn-option" onclick="addSticker('🎀')">🎀</button>
+    <button class="btn-option" onclick="addSticker('🦋')">🦋</button>
+</div>
 
             <button id="snap" class="main-btn">✨ TAKE PHOTO ✨</button>
         </div>
