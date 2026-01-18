@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✧ Y2K DIGITAL BOOTH ✧</title>
+    <style>
+        :root {
+            --pink: #ffafcc;
+            --blue: #a2d2ff;
+            --green: #caffbf;
+            --yellow: #fdffb6;
+            --purple: #cdb4db;
+        }
+
+        body {
+            background: var(--blue);
+            background-image: 
+                linear-gradient(var(--pink) 1px, transparent 1px),
+                linear-gradient(90deg, var(--pink) 1px, transparent 1px);
+            background-size: 30px 30px;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .main-card {
+            background: #fff;
+            border: 5px solid #000;
+            box-shadow: 12px 12px 0px var(--green);
+            border-radius: 2px; /* Gaya Windows 98 agak kaku */
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header-bar {
+            background: linear-gradient(90deg, var(--purple), var(--pink));
+            color: white;
+            padding: 5px 10px;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            border-bottom: 3px solid #000;
+        }
+
+        /* Preview Kamera */
+        #camera-zone {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border: 3px solid #000;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        /* Overlay Frame saat Preview */
+        .frame-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            border: 20px solid transparent;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        /* Pilihan Frame */
+        .frame-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .frame-opt {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #000;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .frame-opt:hover { transform: scale(1.1); }
+
+        /* Style Frame */
+        .f-pink { border-color: var(--pink) !important; background: rgba(255, 175, 204, 0.2); }
+        .f-blue { border-color: var(--blue) !important; border-style: dashed !important; }
+        .f-green { border-image: repeating-linear-gradient(45deg, var(--green), var(--green) 10px, #fff 10px, #fff 20px) 20; }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px;
+            font-family: 'Courier New', sans-serif;
+            font-weight: bold;
+            border: 3px solid #000;
+            cursor: pointer;
+            background: var(--yellow);
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        button:active {
+            box-shadow: 0px 0px 0px #000;
+            transform: translate(4px, 4px);
+        }
+
+        /* Gallery */
+        #gallery {
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .captured-photo {
+            position: relative;
+            background: white;
+            padding: 5px;
+            border: 2px solid #000;
+        }
+
+        canvas { display: none; }
+
+        img { width: 100%; display: block; }
+
+        .footer-text {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-card">
+        <div class="header-bar">
+            <span>Y2K_BOOTH.EXE</span>
+            <span>[X]</span>
+        </div>
+
+        <div id="camera-zone">
+            <video id="video" autoplay playsinline></video>
+            <div id="current-frame" class="frame-overlay f-pink"></div>
+        </div>
+
+        <p style="text-align: center; font-size: 0.9rem; margin-top: 0;">SELECT FRAME:</p>
+        <div class="frame-selector">
+            <div class="frame-opt f-pink" onclick="setFrame('f-pink')"></div>
+            <div class="frame-opt f-blue" onclick="setFrame('f-blue')"></div>
+            <div class="frame-opt f-green" onclick="setFrame('f-green')"></div>
+        </div>
+
+        <div class="btn-group">
+            <button id="snap" style="background: var(--pink);">[ TAKE PHOTO ]</button>
+            <button id="downloadAll" style="background: var(--green);">[ SAVE ALL ]</button>
+        </div>
+    </div>
+
+    <div id="gallery"></div>
+    <canvas id="canvas" width="600" height="450"></canvas>
+
+    <div class="footer-text">✿ design by your-name ✿</div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const gallery = document.getElementById('gallery');
+        const frameOverlay = document.getElementById('current-frame');
+        let currentFrameClass = 'f-pink';
+
+        // Kamera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => video.srcObject = stream)
+            .catch(err => alert("Kamera error: " + err));
+
+        // Ganti Frame
+        function setFrame(className) {
+            frameOverlay.className = 'frame-overlay ' + className;
+            currentFrameClass = className;
+        }
+
+        // Ambil Foto
+        document.getElementById('snap').addEventListener('click', () => {
+            const ctx = canvas.getContext('2d');
+            
+            // 1. Gambar Video (Mirror)
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+
+            // 2. Gambar Frame di atas foto
+            ctx.lineWidth = 40;
+            if(currentFrameClass === 'f-pink') {
+                ctx.strokeStyle = '#ffafcc';
+                ctx.strokeRect(0,0, canvas.width, canvas.height);
+            } else if(currentFrameClass === 'f-blue') {
+                ctx.strokeStyle = '#a2d2ff';
+                ctx.setLineDash([20, 20]);
+                ctx.strokeRect(0,0, canvas.width, canvas.height);
+                ctx.setLineDash([]);
+            } else {
+                ctx.strokeStyle = '#caffbf';
+                ctx.strokeRect(0,0, canvas.width, canvas.height);
+                // Tambah aksen garis
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 10;
+                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+            }
+
+            // Tampilkan di Gallery
+            const dataUrl = canvas.toDataURL('image/png');
+            const container = document.createElement('div');
+            container.className = 'captured-photo';
+            container.innerHTML = `<img src="${dataUrl}"><button onclick="this.parentElement.remove()" style="width:100%; font-size:0.6rem; padding:2px; margin-top:5px">DEL</button>`;
+            gallery.prepend(container);
+        });
+
+        // Download (Simpel: buka gambar baru)
+        document.getElementById('downloadAll').addEventListener('click', () => {
+            const images = document.querySelectorAll('.captured-photo img');
+            if(images.length === 0) return alert("Ambil foto dulu!");
+            
+            images.forEach((img, index) => {
+                const link = document.createElement('a');
+                link.download = `y2k-photo-${index+1}.png`;
+                link.href = img.src;
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>
