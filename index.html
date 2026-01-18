@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ Y2K PHOTOBOOTH + FILTERS ✧</title>
+    <title>✧ photophy ✧</title>
     <style>
         :root {
             --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
@@ -92,7 +92,7 @@
     <div id="flash"></div>
 
     <div class="window">
-        <div class="title-bar"><span>📸 Y2K_FILTER_EDIT.EXE</span><span>[X]</span></div>
+        <div class="title-bar"><span>📸 photophy</span><span>[X]</span></div>
         <div class="content">
             <div id="camera-box">
                 <div id="countdown">3</div>
@@ -100,14 +100,14 @@
                 <div id="current-frame" class="frame-overlay f-star"></div>
             </div>
 
-            <div class="label">1. Frame Color</div>
+            <div class="label">Frame Color</div>
             <div class="selector-group">
                 <div class="btn-f active" style="background:var(--yellow);" onclick="setFrame('f-star', this)"></div>
                 <div class="btn-f" style="background:var(--pink);" onclick="setFrame('f-heart', this)"></div>
                 <div class="btn-f" style="background:var(--green);" onclick="setFrame('f-cyber', this)"></div>
             </div>
 
-            <div class="label">2. Aesthetic Filter</div>
+            <div class="label">Filter</div>
             <div class="selector-group">
                 <button class="btn-option active" onclick="setFilter('none', this)">NORMAL</button>
                 <button class="btn-option" onclick="setFilter('vintage', this)">VINTAGE</button>
@@ -116,7 +116,7 @@
                 <button class="btn-option" onclick="setFilter('bw', this)">B&W</button>
             </div>
 
-            <div class="label">3. Layout</div>
+            <div class="label">Layout</div>
             <div class="selector-group">
                 <button class="btn-option active" onclick="setLayout('single', this)">SINGLE</button>
                 <button class="btn-option" onclick="setLayout('strip', this)">STRIP (x3)</button>
@@ -164,7 +164,7 @@
 
         function setFilter(f, el) {
             currentFilter = f;
-            video.style.filter = filters[f]; // Update preview kamera
+            video.style.filter = filters[f]; 
             updateActive(el, '.btn-option');
         }
 
@@ -265,15 +265,27 @@
         }
 
         function drawWithFrame(ctx, img, x, y, w, h) {
-            ctx.drawImage(img, x, y, w, h);
-            ctx.lineWidth = w * 0.05; ctx.setLineDash([]);
-            ctx.strokeStyle = (currentFrame === 'f-star') ? '#fdffb6' : (currentFrame === 'f-heart' ? '#ffafcc' : '#caffbf');
-            ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
-            if(currentFrame === 'f-star') {
-                ctx.fillStyle="#000"; ctx.font = (w/12)+"px serif"; ctx.fillText("★", x+w-30, y+h-20);
-            }
-        }
+    ctx.drawImage(img, x, y, w, h);
+    
+    ctx.lineWidth = w * 0.05;
+    ctx.setLineDash([]); // Reset dash
 
+    if (currentFrame === 'f-star') {
+        ctx.strokeStyle = '#fdffb6'; // Yellow
+        ctx.strokeRect(x + (ctx.lineWidth / 2), y + (ctx.lineWidth / 2), w - ctx.lineWidth, h - ctx.lineWidth);
+        ctx.fillStyle = "#000";
+        ctx.font = (w / 12) + "px serif";
+        ctx.fillText("★", x + w - (w * 0.1), y + h - (h * 0.05));
+    } else if (currentFrame === 'f-heart') {
+        ctx.strokeStyle = '#ffafcc'; // Pink
+        ctx.lineWidth = w * 0.08; // Lebih tebal untuk efek double
+        ctx.strokeRect(x + (ctx.lineWidth / 2), y + (ctx.lineWidth / 2), w - ctx.lineWidth, h - ctx.lineWidth);
+    } else if (currentFrame === 'f-cyber') {
+        ctx.strokeStyle = '#caffbf'; // Green
+        ctx.setLineDash([5, 5]); // Garis putus-putus seperti di preview CSS
+        ctx.strokeRect(x + (ctx.lineWidth / 2), y + (ctx.lineWidth / 2), w - ctx.lineWidth, h - ctx.lineWidth);
+    }
+}
         function downloadImg(url) {
             const a = document.createElement('a'); a.href = url; a.download = `y2k_snap.png`; a.click();
         }
