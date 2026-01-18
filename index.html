@@ -6,7 +6,7 @@
     <title>✧ photophy ✧</title>
     <style>
         :root {
-            --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
+            --pink: #ffafcc; --blue: #0c0252; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
         }
 
         body {
@@ -115,7 +115,7 @@
     <canvas id="canvas" width="600" height="450" style="display:none;"></canvas>
 
     <script>
-        const video = document.getElementById('video');
+const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const gallery = document.getElementById('gallery');
         const frameOverlay = document.getElementById('current-frame');
@@ -131,39 +131,60 @@
         }
 
         document.getElementById('snap').addEventListener('click', () => {
-            // Flash effect
             flash.classList.add('flash-active');
             setTimeout(() => flash.classList.remove('flash-active'), 300);
 
             const ctx = canvas.getContext('2d');
-            
-            // Draw Video
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Bersihkan canvas
+
+            // 1. Gambar Video (Mirror)
             ctx.save();
-            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             ctx.restore();
 
-            // Draw Frame onto Canvas
-            ctx.lineWidth = 40;
+            // 2. Gambar Frame (Sesuai Pilihan)
+            ctx.lineWidth = 30; // Ketebalan frame
+            ctx.setLineDash([]); // Reset garis putus-putus
+
             if(currentFrame === 'f-star') {
-                ctx.strokeStyle = '#fdffb6';
-                ctx.setLineDash([10, 10]);
-                ctx.strokeRect(0,0, canvas.width, canvas.height);
-            } else if(currentFrame === 'f-heart') {
+                // Frame Kuning Putus-putus (Sama dengan preview)
+                ctx.strokeStyle = '#fdffb6'; 
+                ctx.setLineDash([15, 15]); 
+                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+                
+                // Tambah emoji bintang di pojok
+                ctx.setLineDash([]);
+                ctx.font = "40px serif";
+                ctx.fillText("★", canvas.width - 60, canvas.height - 40);
+            } 
+            else if(currentFrame === 'f-heart') {
+                // Frame Pink Double (Simulasi double border)
                 ctx.strokeStyle = '#ffafcc';
-                ctx.strokeRect(0,0, canvas.width, canvas.height);
-            } else {
+                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#fff';
+                ctx.strokeRect(30, 30, canvas.width-60, canvas.height-60);
+                
+                ctx.font = "40px serif";
+                ctx.fillText("💖", 40, 70);
+            } 
+            else if(currentFrame === 'f-cyber') {
+                // Frame Hijau Neon Cyber
                 ctx.strokeStyle = '#caffbf';
-                ctx.strokeRect(0,0, canvas.width, canvas.height);
-                ctx.lineWidth = 2; ctx.strokeStyle = '#000';
-                ctx.strokeRect(40,40, canvas.width-80, canvas.height-80);
+                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+                // Garis hitam tipis di tengah
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#000';
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
             }
 
-            // Create Gallery Item
+            // 3. Masukkan ke Gallery
             const dataUrl = canvas.toDataURL('image/png');
             const div = document.createElement('div');
             div.className = 'polaroid';
-            // Random rotation for y2k look
             div.style.setProperty('--r', (Math.random() * 6 - 3).toFixed(2));
             
             div.innerHTML = `
