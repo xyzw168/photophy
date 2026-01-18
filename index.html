@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ Y2K PHOTOBOOTH CUSTOM ✧</title>
+    <title>✧ Y2K PHOTOBOOTH + FILTERS ✧</title>
     <style>
         :root {
             --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
@@ -42,12 +42,13 @@
             background: #000; border: 3px solid #000; margin-bottom: 15px; overflow: hidden;
         }
 
+        /* Filter Kamera Preview */
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.3s; }
 
-        /* Overlay untuk Frame Gambar */
-        #frame-img-display {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 11; display: none; object-fit: fill;
+        #countdown {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 80px; color: white; font-weight: bold; z-index: 100;
+            text-shadow: 4px 4px 0px var(--pink); display: none;
         }
 
         .frame-overlay {
@@ -58,16 +59,10 @@
         .f-heart { border-color: var(--pink); border-style: double; border-width: 20px; }
         .f-cyber { border-color: var(--green); outline: 2px dashed #000; border-width: 12px; }
 
-        #countdown {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 80px; color: white; font-weight: bold; z-index: 100;
-            text-shadow: 4px 4px 0px var(--pink); display: none;
-        }
-
         .label { font-size: 10px; font-weight: bold; margin: 8px 0 4px 0; text-transform: uppercase; }
         .selector-group { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
         
-        .btn-f { width: 30px; height: 30px; border: 2px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: bold; text-align: center; line-height: 1; }
+        .btn-f { width: 25px; height: 25px; border: 2px solid #000; cursor: pointer; }
         .btn-option {
             padding: 4px 8px; border: 2px solid #000; background: #eee;
             cursor: pointer; font-size: 9px; font-weight: bold; font-family: inherit;
@@ -97,21 +92,19 @@
     <div id="flash"></div>
 
     <div class="window">
-        <div class="title-bar"><span>📸 Y2K_CUSTOM_FRAME.EXE</span><span>[X]</span></div>
+        <div class="title-bar"><span>📸 Y2K_FILTER_EDIT.EXE</span><span>[X]</span></div>
         <div class="content">
             <div id="camera-box">
                 <div id="countdown">3</div>
                 <video id="video" autoplay playsinline></video>
                 <div id="current-frame" class="frame-overlay f-star"></div>
-                <img id="frame-img-display" src="">
             </div>
 
-            <div class="label">1. Frame Design</div>
+            <div class="label">1. Frame Color</div>
             <div class="selector-group">
                 <div class="btn-f active" style="background:var(--yellow);" onclick="setFrame('f-star', this)"></div>
                 <div class="btn-f" style="background:var(--pink);" onclick="setFrame('f-heart', this)"></div>
                 <div class="btn-f" style="background:var(--green);" onclick="setFrame('f-cyber', this)"></div>
-                <div class="btn-f" style="background:white; border-color:var(--purple)" onclick="setCustomFrame('https://i.ibb.co/vz6V0vD/frame1.png', this)">OVAL FRAME</div>
             </div>
 
             <div class="label">2. Aesthetic Filter</div>
@@ -142,22 +135,20 @@
         const canvas = document.getElementById('canvas');
         const gallery = document.getElementById('gallery');
         const frameOverlay = document.getElementById('current-frame');
-        const frameImgDisplay = document.getElementById('frame-img-display');
         const flash = document.getElementById('flash');
         const countdownEl = document.getElementById('countdown');
         const snapBtn = document.getElementById('snap');
         
         let currentFrame = 'f-star';
-        let isCustomFrame = false;
-        let customFrameSrc = '';
         let currentLayout = 'single';
         let currentFilter = 'none';
 
+        // Konfigurasi Filter CSS
         const filters = {
             none: '',
-            vintage: 'sepia(0.4) contrast(1.1) brightness(1.1)',
-            dreamy: 'saturate(1.4) blur(0.4px) brightness(1.1) hue-rotate(-5deg)',
-            cold: 'contrast(1.1) brightness(1.1) hue-rotate(180deg) saturate(0.7)',
+            vintage: 'sepia(0.5) contrast(1.2) brightness(1.1)',
+            dreamy: 'saturate(1.5) blur(0.5px) brightness(1.2) hue-rotate(-10deg)',
+            cold: 'contrast(1.1) brightness(1.1) hue-rotate(180deg) saturate(0.8)',
             bw: 'grayscale(1) contrast(1.2)'
         };
 
@@ -166,26 +157,14 @@
         }).then(stream => video.srcObject = stream);
 
         function setFrame(f, el) {
-            isCustomFrame = false;
             currentFrame = f;
-            frameImgDisplay.style.display = 'none';
-            frameOverlay.style.display = 'block';
             frameOverlay.className = 'frame-overlay ' + f;
-            updateActive(el, '.btn-f');
-        }
-
-        function setCustomFrame(url, el) {
-            isCustomFrame = true;
-            customFrameSrc = url;
-            frameOverlay.style.display = 'none';
-            frameImgDisplay.style.display = 'block';
-            frameImgDisplay.src = url;
             updateActive(el, '.btn-f');
         }
 
         function setFilter(f, el) {
             currentFilter = f;
-            video.style.filter = filters[f];
+            video.style.filter = filters[f]; // Update preview kamera
             updateActive(el, '.btn-option');
         }
 
@@ -233,7 +212,8 @@
             tempCanvas.width = targetWidth;
             tempCanvas.height = targetHeight;
             const tCtx = tempCanvas.getContext('2d');
-            
+
+            // TERAPKAN FILTER KE CANVAS
             tCtx.filter = filters[currentFilter];
 
             const videoAspect = video.videoWidth / video.videoHeight;
@@ -263,20 +243,19 @@
             const ctx = canvas.getContext('2d');
             if(currentLayout === 'single') {
                 canvas.width = 640; canvas.height = 480;
-                drawPhotoWithFrame(ctx, imgs[0], 0, 0, 640, 480);
+                drawWithFrame(ctx, imgs[0], 0, 0, 640, 480);
             } else if(currentLayout === 'strip') {
                 canvas.width = 320; canvas.height = 760;
                 ctx.fillStyle = "white"; ctx.fillRect(0,0,320,760);
-                imgs.forEach((img, i) => drawPhotoWithFrame(ctx, img, 20, 20 + (i*240), 280, 210));
+                imgs.forEach((img, i) => drawWithFrame(ctx, img, 20, 20 + (i*240), 280, 210));
             } else if(currentLayout === 'grid') {
                 canvas.width = 600; canvas.height = 600;
                 ctx.fillStyle = "white"; ctx.fillRect(0,0,600,600);
-                drawPhotoWithFrame(ctx, imgs[0], 20, 20, 270, 270);
-                drawPhotoWithFrame(ctx, imgs[1], 310, 20, 270, 270);
-                drawPhotoWithFrame(ctx, imgs[2], 20, 310, 270, 270);
-                drawPhotoWithFrame(ctx, imgs[3], 310, 310, 270, 270);
+                drawWithFrame(ctx, imgs[0], 20, 20, 270, 270);
+                drawWithFrame(ctx, imgs[1], 310, 20, 270, 270);
+                drawWithFrame(ctx, imgs[2], 20, 310, 270, 270);
+                drawWithFrame(ctx, imgs[3], 310, 310, 270, 270);
             }
-            
             const dataUrl = canvas.toDataURL('image/png');
             const div = document.createElement('div');
             div.className = 'polaroid';
@@ -285,19 +264,13 @@
             gallery.prepend(div);
         }
 
-        function drawPhotoWithFrame(ctx, img, x, y, w, h) {
+        function drawWithFrame(ctx, img, x, y, w, h) {
             ctx.drawImage(img, x, y, w, h);
-            
-            if (isCustomFrame) {
-                // Gambar Frame PNG di atas foto secara sinkron
-                ctx.drawImage(frameImgDisplay, x, y, w, h);
-            } else {
-                ctx.lineWidth = w * 0.05; ctx.setLineDash([]);
-                ctx.strokeStyle = (currentFrame === 'f-star') ? '#fdffb6' : (currentFrame === 'f-heart' ? '#ffafcc' : '#caffbf');
-                ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
-                if(currentFrame === 'f-star') {
-                    ctx.fillStyle="#000"; ctx.font = (w/12)+"px serif"; ctx.fillText("★", x+w-30, y+h-20);
-                }
+            ctx.lineWidth = w * 0.05; ctx.setLineDash([]);
+            ctx.strokeStyle = (currentFrame === 'f-star') ? '#fdffb6' : (currentFrame === 'f-heart' ? '#ffafcc' : '#caffbf');
+            ctx.strokeRect(x+(ctx.lineWidth/2), y+(ctx.lineWidth/2), w-ctx.lineWidth, h-ctx.lineWidth);
+            if(currentFrame === 'f-star') {
+                ctx.fillStyle="#000"; ctx.font = (w/12)+"px serif"; ctx.fillText("★", x+w-30, y+h-20);
             }
         }
 
