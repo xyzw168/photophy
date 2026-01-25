@@ -139,7 +139,7 @@
             <div id="main-controls">
                 <div class="label">1. Choose Layout</div>
                 <div class="selector-group">
-                    <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 800, 950, this)">SINGLE (POLA)</button>
+                    <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 800, 820, this)">SINGLE (POLA)</button>
                     <button class="btn-option" onclick="selectLayout('STRIP', 3, 400, 1100, this)">STRIP (3)</button>
                     <button class="btn-option" onclick="selectLayout('GRID', 4, 800, 1000, this)">GRID (4)</button>
                     <button class="btn-option" onclick="selectLayout('STORY3', 3, 1080, 1920, this)">STORY (3)</button>
@@ -350,7 +350,7 @@
             ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (currentLayout.id === 'SINGLE') {
-                ctx.drawImage(capturedImgs[0], 50, 50, 600, 525);
+                ctx.drawImage(capturedImgs[0], 50, 50, 700, 525);
             } 
             else if (currentLayout.id === 'STRIP') {
                 for(let i=0; i<3; i++) ctx.drawImage(capturedImgs[i], 35, 50 + (i*330), 330, 280);
