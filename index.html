@@ -42,7 +42,6 @@
             display: flex; gap: 10px; align-items: flex-start; justify-content: center; margin-bottom: 15px;
         }
 
-        /* KEMBALI KE 4:3 LANDSCAPE */
         #camera-box {
             position: relative; flex: 3; aspect-ratio: 4/3; 
             background: #000; border: 3px solid #000; 
@@ -263,24 +262,50 @@
             });
         }
 
+        // FUNGSI JEPRET: Diperbaiki agar hasil TIDAK PENYET
         function grabFrame() {
             const temp = document.createElement('canvas');
-            const targetW = 800; const targetH = 600;
-            temp.width = targetW; temp.height = targetH;
-            const tCtx = temp.getContext('2d');
-            tCtx.filter = filterStyles[currentFilter];
-            if (useFacingMode === 'user') { tCtx.translate(targetW, 0); tCtx.scale(-1, 1); }
+            
+            // Tentukan ukuran target foto berdasarkan layout
+            let targetW, targetH;
+            if (currentLayout.id === 'SINGLE') { targetW = 700; targetH = 700; }
+            else if (currentLayout.id === 'STRIP') { targetW = 330; targetH = 280; }
+            else if (currentLayout.id === 'GRID') { targetW = 350; targetH = 380; }
+            else if (currentLayout.id.includes('STORY')) { targetW = 880; targetH = 500; }
+            else { targetW = 600; targetH = 450; }
 
-            const vw = video.videoWidth; const vh = video.videoHeight;
+            temp.width = targetW;
+            temp.height = targetH;
+            const tCtx = temp.getContext('2d');
+            
+            tCtx.filter = filterStyles[currentFilter];
+
+            // Mirroring
+            if (useFacingMode === 'user') {
+                tCtx.translate(targetW, 0);
+                tCtx.scale(-1, 1);
+            }
+
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
             const videoRatio = vw / vh;
             const targetRatio = targetW / targetH;
 
             let sx, sy, sw, sh;
+
+            // Logika Center Crop: Memotong bagian yang berlebih agar rasio pas
             if (videoRatio > targetRatio) {
-                sw = vh * targetRatio; sh = vh; sx = (vw - sw) / 2; sy = 0;
+                sw = vh * targetRatio;
+                sh = vh;
+                sx = (vw - sw) / 2;
+                sy = 0;
             } else {
-                sw = vw; sh = vw / targetRatio; sx = 0; sy = (vh - sh) / 2;
+                sw = vw;
+                sh = vw / targetRatio;
+                sx = 0;
+                sy = (vh - sh) / 2;
             }
+
             tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, targetH);
             return temp;
         }
@@ -298,23 +323,21 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (currentLayout.id === 'SINGLE') {
-                ctx.drawImage(imgs[0], 50, 50, canvas.width-100, canvas.height-100);
+                ctx.drawImage(imgs[0], 50, 50, 700, 700);
             } 
             else if (currentLayout.id === 'STRIP') {
                 for(let i=0; i<3; i++) ctx.drawImage(imgs[i], 35, 50 + (i*330), 330, 280);
             }
             else if (currentLayout.id === 'GRID') {
-                const w = 350; const h = 380;
-                ctx.drawImage(imgs[0], 35, 50, w, h); ctx.drawImage(imgs[1], 415, 50, w, h);
-                ctx.drawImage(imgs[2], 35, 460, w, h); ctx.drawImage(imgs[3], 415, 460, w, h);
+                ctx.drawImage(imgs[0], 35, 50, 350, 380); ctx.drawImage(imgs[1], 415, 50, 350, 380);
+                ctx.drawImage(imgs[2], 35, 460, 350, 380); ctx.drawImage(imgs[3], 415, 460, 350, 380);
             }
             else if (currentLayout.id === 'STORY3') {
                 for(let i=0; i<3; i++) ctx.drawImage(imgs[i], 100, 150 + (i*550), 880, 500);
             }
             else if (currentLayout.id === 'STORY4') {
-                const w = 420; const h = 600;
-                ctx.drawImage(imgs[0], 100, 200, w, h); ctx.drawImage(imgs[1], 560, 200, w, h);
-                ctx.drawImage(imgs[2], 100, 850, w, h); ctx.drawImage(imgs[3], 560, 850, w, h);
+                ctx.drawImage(imgs[0], 100, 200, 420, 600); ctx.drawImage(imgs[1], 560, 200, 420, 600);
+                ctx.drawImage(imgs[2], 100, 850, 420, 600); ctx.drawImage(imgs[3], 560, 850, 420, 600);
             }
 
             if (selectedFrameURL !== 'none') {
