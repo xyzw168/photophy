@@ -126,7 +126,7 @@
 
             <div class="label">1. Choose Layout</div>
             <div class="selector-group">
-                <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 800, 800, this)">SINGLE</button>
+                <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 800, 1000, this)">SINGLE (POLA)</button>
                 <button class="btn-option" onclick="selectLayout('STRIP', 3, 400, 1100, this)">STRIP (3)</button>
                 <button class="btn-option" onclick="selectLayout('GRID', 4, 800, 1000, this)">GRID (4)</button>
                 <button class="btn-option" onclick="selectLayout('STORY3', 3, 1080, 1920, this)">STORY (3)</button>
@@ -164,7 +164,7 @@
         const frameOptions = document.getElementById('frame-options');
 
         let currentFilter = 'none';
-        let currentLayout = { id: 'SINGLE', count: 1, w: 800, h: 800 };
+        let currentLayout = { id: 'SINGLE', count: 1, w: 800, h: 1000 };
         let selectedFrameURL = 'none';
         let useFacingMode = 'user';
 
@@ -185,9 +185,7 @@
         };
 
         async function startCamera() {
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(track => track.stop());
-            }
+            if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); }
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: useFacingMode } });
                 video.srcObject = stream;
@@ -196,10 +194,7 @@
             } catch (err) { alert("Akses kamera ditolak."); }
         }
 
-        function switchCamera() {
-            useFacingMode = useFacingMode === 'user' ? 'environment' : 'user';
-            startCamera();
-        }
+        function switchCamera() { useFacingMode = useFacingMode === 'user' ? 'environment' : 'user'; startCamera(); }
 
         function selectLayout(id, count, w, h, el) {
             currentLayout = { id, count, w, h };
@@ -262,51 +257,31 @@
             });
         }
 
-        // FUNGSI JEPRET: Diperbaiki agar hasil TIDAK PENYET
         function grabFrame() {
             const temp = document.createElement('canvas');
-            
-            // Tentukan ukuran target foto berdasarkan layout
-            let targetW, targetH;
-            if (currentLayout.id === 'SINGLE') { targetW = 700; targetH = 700; }
-            else if (currentLayout.id === 'STRIP') { targetW = 330; targetH = 280; }
-            else if (currentLayout.id === 'GRID') { targetW = 350; targetH = 380; }
-            else if (currentLayout.id.includes('STORY')) { targetW = 880; targetH = 500; }
-            else { targetW = 600; targetH = 450; }
+            let tw, th;
 
-            temp.width = targetW;
-            temp.height = targetH;
+            // RASIO DINAMIS UNTUK ANTI PENYET
+            if (currentLayout.id === 'SINGLE') { tw = 700; th = 525; } // Tetap 4:3 sesuai preview
+            else if (currentLayout.id === 'STRIP') { tw = 330; th = 280; }
+            else if (currentLayout.id === 'GRID') { tw = 350; th = 380; }
+            else if (currentLayout.id === 'STORY3') { tw = 880; th = 480; }
+            else if (currentLayout.id === 'STORY4') { tw = 420; th = 560; } // Vertikal untuk Story 4 agar tidak penyet
+            else { tw = 600; th = 450; }
+
+            temp.width = tw; temp.height = th;
             const tCtx = temp.getContext('2d');
-            
             tCtx.filter = filterStyles[currentFilter];
+            if (useFacingMode === 'user') { tCtx.translate(tw, 0); tCtx.scale(-1, 1); }
 
-            // Mirroring
-            if (useFacingMode === 'user') {
-                tCtx.translate(targetW, 0);
-                tCtx.scale(-1, 1);
-            }
-
-            const vw = video.videoWidth;
-            const vh = video.videoHeight;
-            const videoRatio = vw / vh;
-            const targetRatio = targetW / targetH;
-
+            const vw = video.videoWidth; const vh = video.videoHeight;
+            const vRatio = vw / vh; const tRatio = tw / th;
             let sx, sy, sw, sh;
 
-            // Logika Center Crop: Memotong bagian yang berlebih agar rasio pas
-            if (videoRatio > targetRatio) {
-                sw = vh * targetRatio;
-                sh = vh;
-                sx = (vw - sw) / 2;
-                sy = 0;
-            } else {
-                sw = vw;
-                sh = vw / targetRatio;
-                sx = 0;
-                sy = (vh - sh) / 2;
-            }
+            if (vRatio > tRatio) { sw = vh * tRatio; sh = vh; sx = (vw - sw) / 2; sy = 0; }
+            else { sw = vw; sh = vw / tRatio; sx = 0; sy = (vh - sh) / 2; }
 
-            tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, targetH);
+            tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, tw, th);
             return temp;
         }
 
@@ -323,7 +298,8 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (currentLayout.id === 'SINGLE') {
-                ctx.drawImage(imgs[0], 50, 50, 700, 700);
+                // Gap bawah polaroid (Foto di atas, sisa putih di bawah)
+                ctx.drawImage(imgs[0], 50, 50, 700, 525);
             } 
             else if (currentLayout.id === 'STRIP') {
                 for(let i=0; i<3; i++) ctx.drawImage(imgs[i], 35, 50 + (i*330), 330, 280);
@@ -333,11 +309,13 @@
                 ctx.drawImage(imgs[2], 35, 460, 350, 380); ctx.drawImage(imgs[3], 415, 460, 350, 380);
             }
             else if (currentLayout.id === 'STORY3') {
-                for(let i=0; i<3; i++) ctx.drawImage(imgs[i], 100, 150 + (i*550), 880, 500);
+                // STORY 3: Jarak antar foto lebih renggang (gap lebih banyak)
+                for(let i=0; i<3; i++) ctx.drawImage(imgs[i], 100, 200 + (i*520), 880, 480);
             }
             else if (currentLayout.id === 'STORY4') {
-                ctx.drawImage(imgs[0], 100, 200, 420, 600); ctx.drawImage(imgs[1], 560, 200, 420, 600);
-                ctx.drawImage(imgs[2], 100, 850, 420, 600); ctx.drawImage(imgs[3], 560, 850, 420, 600);
+                // STORY 4: Rasio portrait agar tidak penyet
+                ctx.drawImage(imgs[0], 100, 200, 420, 560); ctx.drawImage(imgs[1], 560, 200, 420, 560);
+                ctx.drawImage(imgs[2], 100, 850, 420, 560); ctx.drawImage(imgs[3], 560, 850, 420, 560);
             }
 
             if (selectedFrameURL !== 'none') {
