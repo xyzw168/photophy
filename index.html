@@ -28,7 +28,7 @@
         .btn-opt { padding: 5px 8px; border: 2px solid #000; background: #eee; cursor: pointer; font-size: 9px; font-weight: bold; font-family: inherit; }
         .active { background: var(--pink) !important; color: white; box-shadow: 2px 2px 0px #000; }
         .main-btn { width: 100%; padding: 15px; background: var(--green); border: 3px solid #000; font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0px #000; }
-        #adjust-ui { display: none; background: #f0f0f0; padding: 10px; border: 2px dashed #000; margin-top: 10px; }
+        #adjust-ui { display: none; background: #f9f9f9; padding: 10px; border: 2px dashed #000; margin-top: 10px; }
         #gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 25px; width: 95%; max-width: 500px; }
         .polaroid { background: white; padding: 8px; border: 2px solid #000; transform: rotate(var(--r)); margin-bottom: 20px; }
         .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; display: block; }
@@ -58,9 +58,9 @@
             </div>
 
             <div id="adjust-ui">
-                <div class="label">Zoom</div>
+                <div class="label">Zoom & Drag Foto Galeri</div>
                 <input type="range" id="zoom-range" min="0.1" max="2" step="0.01" value="1" style="width:100%">
-                <button class="main-btn" style="background:var(--purple); margin-top:10px" onclick="confirmAdjust()">DONE</button>
+                <button class="main-btn" style="background:var(--purple); margin-top:10px; padding:10px" onclick="confirmAdjust()">OK, USE THIS PHOTO</button>
             </div>
 
             <div id="controls-ui">
@@ -72,7 +72,16 @@
                     <button class="btn-opt" onclick="setLay('STORY3',3,1080,1920,this)">STORY 3</button>
                     <button class="btn-opt" onclick="setLay('STORY4',4,1080,1920,this)">STORY 4</button>
                 </div>
-                <div class="label">2. Design</div>
+
+                <div class="label">2. Filter</div>
+                <div class="selector-group">
+                    <button class="btn-opt active" onclick="setFilter('none', this)">Normal</button>
+                    <button class="btn-opt" onclick="setFilter('sepia(0.6) contrast(1.1)', this)">Vintage</button>
+                    <button class="btn-opt" onclick="setFilter('grayscale(1)', this)">B&W</button>
+                    <button class="btn-opt" onclick="setFilter('hue-rotate(-20deg) saturate(1.2)', this)">Rosy</button>
+                </div>
+
+                <div class="label">3. Design</div>
                 <div id="design-opts" class="selector-group"></div>
                 <button id="snap" class="main-btn">✨ TAKE PHOTO ✨</button>
             </div>
@@ -88,25 +97,37 @@
         const zoomRange = document.getElementById('zoom-range');
         let currentLay = { id: 'SINGLE', count: 1, w: 800, h: 920 };
         let frameURL = 'none', facing = 'user', photos = [], tempImg = new Image();
-        let offX = 0, offY = 0, scale = 1, isDrag = false, startX, startY;
+        let offX = 0, offY = 0, scale = 1, isDrag = false, startX, startY, currentFilter = 'none';
 
         async function init() {
-            const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
-            video.srcObject = s;
-            video.classList.toggle('mirror', facing === 'user');
-            renderFrames('SINGLE');
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
+                video.srcObject = s;
+                video.classList.toggle('mirror', facing === 'user');
+                renderFrames('SINGLE');
+            } catch(e) { alert("Camera Error"); }
         }
 
         function setLay(id, c, w, h, el) {
             currentLay = { id, count: c, w, h };
-            document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
+            updateActive(el, '#controls-ui .selector-group:first-of-type .btn-opt');
             renderFrames(id);
+        }
+
+        function setFilter(f, el) {
+            currentFilter = f;
+            video.style.filter = f === 'none' ? '' : f;
+            updateActive(el, '#controls-ui .selector-group:nth-of-type(2) .btn-opt');
+        }
+
+        function updateActive(el, selector) {
+            document.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
         }
 
         function renderFrames(id) {
             const box = document.getElementById('design-opts'); box.innerHTML = '';
-            const list = [{name:'None', url:'none'}, {name:'Design 1', url:'https://i.ibb.co.com/fGzfpG5R/layphy1.png'}];
+            const list = [{name:'None', url:'none'}, {name:'Frame 1', url:'https://i.ibb.co.com/fGzfpG5R/layphy1.png'}];
             list.forEach(f => {
                 const b = document.createElement('button'); b.className = 'btn-opt'; b.innerText = f.name;
                 b.onclick = () => { frameURL = f.url; document.getElementById('mini-frame').innerHTML = f.url==='none'?'None':`<img src="${f.url}">`; };
@@ -114,7 +135,7 @@
             });
         }
 
-        // --- KAMERA OTOMATIS (Tanpa Geser) ---
+        // AUTO CAPTURE
         document.getElementById('snap').onclick = async () => {
             photos = [];
             for(let i=0; i<currentLay.count; i++) {
@@ -138,6 +159,7 @@
             if(currentLay.id==='STORY4') { tw=420; th=560; }
             c.width = tw; c.height = th;
             const ctx = c.getContext('2d');
+            ctx.filter = currentFilter === 'none' ? 'none' : currentFilter;
             if(facing==='user') { ctx.translate(tw,0); ctx.scale(-1,1); }
             const vr = video.videoWidth/video.videoHeight, tr = tw/th;
             let sx, sy, sw, sh;
@@ -147,7 +169,7 @@
             return c;
         }
 
-        // --- FITUR GALERI (Pake Geser & Zoom) ---
+        // GALLERY LOAD
         function loadFromGallery(e) {
             const r = new FileReader();
             r.onload = (f) => {
@@ -157,7 +179,7 @@
                     adjCanvas.style.display = 'block';
                     document.getElementById('adjust-ui').style.display = 'block';
                     document.getElementById('controls-ui').style.display = 'none';
-                    offX = adjCanvas.width/2; offY = adjCanvas.height/2; scale = 0.5;
+                    offX = 300; offY = 225; scale = 0.5;
                     drawAdj();
                 };
                 tempImg.src = f.target.result;
@@ -168,6 +190,7 @@
         function drawAdj() {
             adjCtx.fillStyle = '#000'; adjCtx.fillRect(0,0,600,450);
             const w = tempImg.width * scale, h = tempImg.height * scale;
+            adjCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
             adjCtx.drawImage(tempImg, offX - w/2, offY - h/2, w, h);
         }
 
@@ -186,7 +209,6 @@
             if(photos.length >= currentLay.count) renderFinal();
         }
 
-        // --- RENDER AKHIR ---
         async function renderFinal() {
             const c = document.getElementById('work-canvas'); const ctx = c.getContext('2d');
             c.width = currentLay.w; c.height = currentLay.h;
