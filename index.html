@@ -350,7 +350,7 @@
             ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (currentLayout.id === 'SINGLE') {
-                ctx.drawImage(capturedImgs[0], 50, 50, 700, 525);
+                ctx.drawImage(capturedImgs[0], 50, 50, 700, 550);
             } 
             else if (currentLayout.id === 'STRIP') {
                 for(let i=0; i<3; i++) ctx.drawImage(capturedImgs[i], 35, 50 + (i*330), 330, 280);
