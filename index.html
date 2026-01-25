@@ -27,7 +27,7 @@
 
         .window {
             background: white; border: 4px solid #000; box-shadow: 8px 8px 0px #000;
-            width: 95%; max-width: 480px; margin-top: 10px;
+            width: 95%; max-width: 500px; margin-top: 10px;
         }
 
         .title-bar {
@@ -39,16 +39,18 @@
         .content { padding: 12px; text-align: center; }
 
         .camera-section {
-            display: flex; gap: 10px; align-items: stretch; justify-content: center; margin-bottom: 15px;
+            display: flex; gap: 10px; align-items: flex-start; justify-content: center; margin-bottom: 15px;
         }
 
+        /* KEMBALI KE 4:3 LANDSCAPE */
         #camera-box {
-            position: relative; flex: 3; aspect-ratio: 3/4; 
+            position: relative; flex: 3; aspect-ratio: 4/3; 
             background: #000; border: 3px solid #000; 
             overflow: hidden;
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .mirror { transform: scaleX(-1); }
 
         #countdown {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -57,11 +59,12 @@
         }
 
         .side-preview {
-            flex: 1; display: flex; flex-direction: column; align-items: center; background: #f9f9f9; border: 2px solid #000; padding: 5px;
+            flex: 1; display: flex; flex-direction: column; align-items: center; 
+            background: #f9f9f9; border: 2px solid #000; padding: 5px; min-height: 120px;
         }
 
         #frame-mini-preview {
-            width: 100%; aspect-ratio: 2/3; border: 1px solid #000; background: #eee;
+            width: 100%; height: 80px; border: 1px solid #000; background: #eee;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         #frame-mini-preview img { width: 100%; height: 100%; object-fit: contain; }
@@ -80,10 +83,15 @@
             font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 4px 4px 0px #000; 
             margin-top: 10px;
         }
+        
+        .switch-btn {
+            background: var(--yellow); padding: 5px; border: 2px solid #000; 
+            font-size: 9px; font-weight: bold; cursor: pointer; margin-top: 8px; width: 100%;
+        }
 
         #gallery {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
-            margin-top: 25px; width: 95%; max-width: 480px;
+            margin-top: 25px; width: 95%; max-width: 500px;
         }
 
         .polaroid {
@@ -107,12 +115,13 @@
             <div class="camera-section">
                 <div id="camera-box">
                     <div id="countdown">3</div>
-                    <video id="video" autoplay playsinline></video>
+                    <video id="video" autoplay playsinline class="mirror"></video>
                 </div>
                 
                 <div class="side-preview">
                     <div class="label" style="margin-top:0">Frame</div>
                     <div id="frame-mini-preview">None</div>
+                    <button class="switch-btn" onclick="switchCamera()">🔄 SWITCH</button>
                 </div>
             </div>
 
@@ -158,6 +167,7 @@
         let currentFilter = 'none';
         let currentLayout = { id: 'SINGLE', count: 1, w: 800, h: 800 };
         let selectedFrameURL = 'none';
+        let useFacingMode = 'user';
 
         const frameDatabase = {
             'SINGLE': [{ name: 'NONE', url: 'none' }, { name: 'S1', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }],
@@ -175,7 +185,22 @@
             cold: 'contrast(1.1) brightness(1.1) saturate(0.8) hue-rotate(180deg) opacity(0.9)'
         };
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(stream => video.srcObject = stream);
+        async function startCamera() {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: useFacingMode } });
+                video.srcObject = stream;
+                if (useFacingMode === 'user') video.classList.add('mirror');
+                else video.classList.remove('mirror');
+            } catch (err) { alert("Akses kamera ditolak."); }
+        }
+
+        function switchCamera() {
+            useFacingMode = useFacingMode === 'user' ? 'environment' : 'user';
+            startCamera();
+        }
 
         function selectLayout(id, count, w, h, el) {
             currentLayout = { id, count, w, h };
@@ -211,6 +236,7 @@
             el.classList.add('active');
         }
 
+        startCamera();
         renderFrameOptions('SINGLE');
 
         snapBtn.addEventListener('click', async () => {
@@ -237,17 +263,13 @@
             });
         }
 
-        // FUNGSI ANTI PENYOK: Melakukan Center Crop
         function grabFrame() {
             const temp = document.createElement('canvas');
-            const targetW = 600; const targetH = 450; // Standar landscape
+            const targetW = 800; const targetH = 600;
             temp.width = targetW; temp.height = targetH;
             const tCtx = temp.getContext('2d');
-            
             tCtx.filter = filterStyles[currentFilter];
-            
-            // Mirroring
-            tCtx.translate(targetW, 0); tCtx.scale(-1, 1);
+            if (useFacingMode === 'user') { tCtx.translate(targetW, 0); tCtx.scale(-1, 1); }
 
             const vw = video.videoWidth; const vh = video.videoHeight;
             const videoRatio = vw / vh;
@@ -255,13 +277,10 @@
 
             let sx, sy, sw, sh;
             if (videoRatio > targetRatio) {
-                sw = vh * targetRatio; sh = vh;
-                sx = (vw - sw) / 2; sy = 0;
+                sw = vh * targetRatio; sh = vh; sx = (vw - sw) / 2; sy = 0;
             } else {
-                sw = vw; sh = vw / targetRatio;
-                sx = 0; sy = (vh - sh) / 2;
+                sw = vw; sh = vw / targetRatio; sx = 0; sy = (vh - sh) / 2;
             }
-
             tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, targetH);
             return temp;
         }
@@ -278,7 +297,6 @@
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // LOGIKA PENEMPATAN FOTO (REVISI JARAK)
             if (currentLayout.id === 'SINGLE') {
                 ctx.drawImage(imgs[0], 50, 50, canvas.width-100, canvas.height-100);
             } 
