@@ -101,6 +101,7 @@
             transform: rotate(var(--r)); margin-bottom: 20px;
         }
         .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; display: block; }
+        .pol-btns { display: flex; flex-direction: column; gap: 4px; }
         .pol-btns button { width: 100%; padding: 6px; font-size: 10px; cursor: pointer; border: 1px solid #000; font-weight: bold; }
 
         footer { margin-top: 40px; margin-bottom: 20px; font-size: 11px; font-weight: bold; }
@@ -130,9 +131,9 @@
             </div>
 
             <div id="adjust-ui">
-                <div class="label">Zoom & Geser Fotomu</div>
+                <div class="label" id="slot-info">Zoom & Geser Foto (1/1)</div>
                 <input type="range" id="zoom-range" min="0.1" max="2" step="0.01" value="1" style="width:100%">
-                <button class="main-btn" style="background:var(--purple); margin-top:10px" onclick="confirmAdjustment()">✅ PAS, LANJUT!</button>
+                <button class="main-btn" style="background:var(--purple); margin-top:10px" onclick="confirmAdjustment()">✅ NEXT / DONE</button>
             </div>
 
             <div id="main-controls">
@@ -215,6 +216,7 @@
 
         function selectLayout(id, count, w, h, el) {
             currentLayout = { id, count, w, h };
+            capturedImgs = []; // Reset progress
             updateActive(el, '.btn-option');
             renderFrameOptions(id);
             setFrame('none');
@@ -247,7 +249,7 @@
             el.classList.add('active');
         }
 
-        // --- KAMERA OTOMATIS (MODE ASLI) ---
+        // --- KAMERA OTOMATIS ---
         snapBtn.addEventListener('click', async () => {
             snapBtn.disabled = true;
             capturedImgs = [];
@@ -276,24 +278,24 @@
             const temp = document.createElement('canvas');
             let tw = 700, th = 525;
             if (currentLayout.id === 'STORY4') { tw = 420; th = 560; }
-            
             temp.width = tw; temp.height = th;
             const tCtx = temp.getContext('2d');
             tCtx.filter = filterStyles[currentFilter];
             if (useFacingMode === 'user') { tCtx.translate(tw, 0); tCtx.scale(-1, 1); }
-
             const vw = video.videoWidth; const vh = video.videoHeight;
             const vRatio = vw / vh; const tRatio = tw / th;
             let sx, sy, sw, sh;
             if (vRatio > tRatio) { sw = vh * tRatio; sh = vh; sx = (vw - sw) / 2; sy = 0; }
             else { sw = vw; sh = vw / tRatio; sx = 0; sy = (vh - sh) / 2; }
-
             tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, tw, th);
             return temp;
         }
 
-        // --- FITUR LOAD GALERI + ADJUST ---
+        // --- LOAD GALERI FIX (MULTI PHOTO) ---
         function handleUpload(e) {
+            if (capturedImgs.length >= currentLayout.count) {
+                alert("Slot sudah penuh! Silakan buat baru."); return;
+            }
             const reader = new FileReader();
             reader.onload = (f) => {
                 tempImg = new Image();
@@ -302,12 +304,14 @@
                     adjCanvas.style.display = 'block';
                     document.getElementById('adjust-ui').style.display = 'block';
                     document.getElementById('main-controls').style.display = 'none';
+                    document.getElementById('slot-info').innerText = `Zoom & Geser Foto (${capturedImgs.length + 1}/${currentLayout.count})`;
                     offX = 300; offY = 225; scale = 0.5;
                     drawAdj();
                 };
                 tempImg.src = f.target.result;
             };
             reader.readAsDataURL(e.target.files[0]);
+            e.target.value = ''; // Reset input agar bisa upload file yang sama
         }
 
         function drawAdj() {
@@ -331,10 +335,15 @@
             document.getElementById('adjust-ui').style.display = 'none';
             document.getElementById('main-controls').style.display = 'block';
             
-            if(capturedImgs.length >= currentLayout.count) renderFinal();
+            // Cek apakah slot sudah penuh sesuai layout (Strip butuh 3, dll)
+            if(capturedImgs.length >= currentLayout.count) {
+                renderFinal();
+            } else {
+                alert(`Foto ${capturedImgs.length} tersimpan. Silakan jepret/load ${currentLayout.count - capturedImgs.length} lagi.`);
+            }
         }
 
-        // --- RENDER AKHIR KE GALLERY ---
+        // --- RENDER FINAL ---
         async function renderFinal() {
             const ctx = canvas.getContext('2d');
             canvas.width = currentLayout.w; canvas.height = currentLayout.h;
@@ -367,9 +376,15 @@
             const url = canvas.toDataURL('image/png');
             const div = document.createElement('div');
             div.className = 'polaroid'; div.style.setProperty('--r', (Math.random()*4-2)+'deg');
-            div.innerHTML = `<img src="${url}"><div class="pol-btns"><button style="background:var(--blue)" onclick="downloadImg('${url}')">💾 SAVE</button></div>`;
+            div.innerHTML = `
+                <img src="${url}">
+                <div class="pol-btns">
+                    <button style="background:var(--blue)" onclick="downloadImg('${url}')">💾 SAVE</button>
+                    <button style="background:var(--pink); color:white" onclick="this.parentElement.parentElement.remove()">🗑️ DELETE</button>
+                </div>
+            `;
             gallery.prepend(div);
-            capturedImgs = []; // Reset photos
+            capturedImgs = []; // Reset setelah muncul di galeri
         }
 
         function showFlash() { document.getElementById('flash').classList.add('flash-active'); setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300); }
