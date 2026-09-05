@@ -167,9 +167,8 @@
             <div id="main-controls">
                 <div class="label">1. Choose Layout</div>
                 <div class="selector-group">
-                    <!-- Ukuran Canvas diperjelas standard resolusi proporsional -->
                     <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 600, 800, this)">SINGLE</button>
-                    <button class="btn-option" onclick="selectLayout('STRIP', 3, 600, 1800, this)">STRIP (3)</button>
+                    <button class="btn-option" onclick="selectLayout('STRIP', 3, 600, 1400, this)">STRIP (3)</button>
                     <button class="btn-option" onclick="selectLayout('GRID', 4, 800, 800, this)">GRID (4)</button>
                     <button class="btn-option" onclick="selectLayout('STORY3', 3, 1080, 1920, this)">STORY (3)</button>
                     <button class="btn-option" onclick="selectLayout('STORY4', 4, 1080, 1920, this)">STORY (4)</button>
@@ -217,13 +216,28 @@
         let tempImg = new Image();
         let offX = 0, offY = 0, scale = 1, isDragging = false, lastX, lastY;
 
-        // Database frame dipetakan sesuai URL asli kamu (layphy1 untuk strip/single, layphy2 untuk grid)
+        // Database frame dipetakan spesifik per layout agar tidak salah pasang
         const frameDatabase = {
-            'SINGLE': [{ name: 'NONE', url: 'none' }, { name: 'FRAME 1', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }],
-            'STRIP': [{ name: 'NONE', url: 'none' }, { name: 'STRIP A', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }],
-            'GRID': [{ name: 'NONE', url: 'none' }, { name: 'GRID A', url: 'https://i.ibb.co.com/Yn4fKQv/layphy2.png' }],
-            'STORY3': [{ name: 'NONE', url: 'none' }, { name: 'IG 3A', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }],
-            'STORY4': [{ name: 'NONE', url: 'none' }, { name: 'IG 4A', url: 'https://i.ibb.co.com/Yn4fKQv/layphy2.png' }]
+            'SINGLE': [
+                { name: 'NONE', url: 'none' }, 
+                { name: 'FRAME 1', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
+            ],
+            'STRIP': [
+                { name: 'NONE', url: 'none' }, 
+                { name: 'STRIP A', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
+            ],
+            'GRID': [
+                { name: 'NONE', url: 'none' }, 
+                { name: 'GRID A', url: 'https://i.ibb.co.com/Yn4fKQv/layphy2.png' }
+            ],
+            'STORY3': [
+                { name: 'NONE', url: 'none' }, 
+                { name: 'IG 3A', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
+            ],
+            'STORY4': [
+                { name: 'NONE', url: 'none' }, 
+                { name: 'IG 4A', url: 'https://i.ibb.co.com/Yn4fKQv/layphy2.png' }
+            ]
         };
 
         const filterStyles = {
@@ -381,25 +395,22 @@
             }
         }
 
-        // --- RENDER FINAL DENGAN KOORDINAT PRESISI UNTUK FRAME LAYPHY1 & LAYPHY2 ---
+        // --- RENDER FINAL DENGAN POSISI SLOT PRESISI ---
         async function renderFinal() {
             const ctx = canvas.getContext('2d');
             canvas.width = currentLayout.w; canvas.height = currentLayout.h;
             ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Logika tata letak posisi lubang foto disesuaikan agar pas di dalam bingkai template
+            // Mapping koordinat gambar sesuai layout yang dipilih
             if (currentLayout.id === 'SINGLE') {
-                ctx.drawImage(capturedImgs[0], 65, 65, 470, 380);
+                ctx.drawImage(capturedImgs[0], 60, 65, 480, 420);
             } 
             else if (currentLayout.id === 'STRIP') {
-                // Untuk strip 3 (menggunakan referensi layout template layphy1)
-                // Disesuaikan koordinat Y agar pas di 3 kotak bingkai kayu
-                ctx.drawImage(capturedImgs[0], 65, 80, 470, 370);
-                ctx.drawImage(capturedImgs[1], 65, 520, 470, 370);
-                ctx.drawImage(capturedImgs[2], 65, 960, 470, 370);
+                ctx.drawImage(capturedImgs[0], 65, 75, 470, 340);
+                ctx.drawImage(capturedImgs[1], 65, 455, 470, 340);
+                ctx.drawImage(capturedImgs[2], 65, 835, 470, 340);
             }
             else if (currentLayout.id === 'GRID') {
-                // Untuk grid 4 (menggunakan referensi layout template layphy2)
                 ctx.drawImage(capturedImgs[0], 60, 60, 320, 320);
                 ctx.drawImage(capturedImgs[1], 420, 60, 320, 320);
                 ctx.drawImage(capturedImgs[2], 60, 420, 320, 320);
@@ -413,7 +424,7 @@
                 ctx.drawImage(capturedImgs[2], 100, 850, 420, 560); ctx.drawImage(capturedImgs[3], 560, 850, 420, 560);
             }
 
-            // Timpa gambar frame di atas foto agar lubang framenya pas menutupi pinggiran foto
+            // Timpa dengan frame desain jika dipilih selain 'none'
             if (selectedFrameURL !== 'none') {
                 const fImg = new Image(); fImg.crossOrigin = "anonymous"; fImg.src = selectedFrameURL;
                 await new Promise(r => fImg.onload = r);
