@@ -117,9 +117,14 @@
 
         #adjust-ui { display: none; background: var(--light-pink); padding: 12px; border: 2px dashed var(--border-color); border-radius: 12px; margin-top: 10px; }
 
+        .gallery-header {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 95%; max-width: 480px; margin-top: 25px; font-weight: 700; font-size: 13px;
+        }
+
         #gallery {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
-            margin-top: 25px; width: 95%; max-width: 480px;
+            margin-top: 10px; width: 95%; max-width: 480px;
         }
 
         .polaroid {
@@ -198,6 +203,10 @@
         </div>
     </div>
 
+    <div class="gallery-header">
+        <span>✨ YOUR GALLERY</span>
+        <button class="btn-option" style="background:#ff6b6b; color:white; border-radius:6px;" onclick="clearAllGallery()">Clear All</button>
+    </div>
     <div id="gallery"></div>
     <canvas id="canvas" style="display:none;"></canvas>
 
@@ -211,11 +220,10 @@
         const gallery = document.getElementById('gallery');
         const countdownEl = document.getElementById('countdown');
         const snapBtn = document.getElementById('snap');
-        const miniPreview = document.getElementById('frame-mini-preview');
         const zoomRange = document.getElementById('zoom-range');
 
         let currentFilter = 'none';
-        let currentTheme = '#ffb3c6'; // Warna tema default pink
+        let currentTheme = '#ffb3c6'; 
         let currentLayout = { 
             id: 'SINGLE', count: 1, w: 600, h: 800, 
             slotW: 500, slotH: 700 
@@ -443,16 +451,8 @@
             }
 
             const url = canvas.toDataURL('image/png');
-            const div = document.createElement('div');
-            div.className = 'polaroid'; div.style.setProperty('--r', (Math.random()*4-2)+'deg');
-            div.innerHTML = `
-                <img src="${url}">
-                <div class="pol-btns">
-                    <button style="background:var(--blue)" onclick="downloadImg('${url}')">💾 SAVE</button>
-                    <button style="background:var(--pink); color:white" onclick="this.parentElement.parentElement.remove()">🗑️ DELETE</button>
-                </div>
-            `;
-            gallery.prepend(div);
+            saveToLocalStorage(url);
+            appendGalleryItem(url);
             capturedImgs = []; 
         }
 
@@ -473,6 +473,52 @@
             ctx.fillText('✧ photophy ✧ (✿◠‿◠)', w / 2, h - 35);
         }
 
+        function saveToLocalStorage(url) {
+            let photos = JSON.parse(localStorage.getItem('photophy_gallery')) || [];
+            photos.unshift(url); 
+            localStorage.setItem('photophy_gallery', JSON.stringify(photos));
+        }
+
+        function loadGallery() {
+            let photos = JSON.parse(localStorage.getItem('photophy_gallery')) || [];
+            gallery.innerHTML = '';
+            photos.forEach((url, index) => {
+                appendGalleryItem(url, index, false);
+            });
+        }
+
+        function appendGalleryItem(url, index = 0, prepend = true) {
+            const div = document.createElement('div');
+            div.className = 'polaroid'; 
+            div.style.setProperty('--r', (Math.random()*4-2)+'deg');
+            div.innerHTML = `
+                <img src="${url}">
+                <div class="pol-btns">
+                    <button style="background:var(--blue)" onclick="downloadImg('${url}')">💾 SAVE</button>
+                    <button style="background:var(--pink); color:white" onclick="deletePhoto(this, '${url}')">🗑️ DELETE</button>
+                </div>
+            `;
+            if(prepend) {
+                gallery.prepend(div);
+            } else {
+                gallery.appendChild(div);
+            }
+        }
+
+        function deletePhoto(btn, url) {
+            btn.parentElement.parentElement.remove();
+            let photos = JSON.parse(localStorage.getItem('photophy_gallery')) || [];
+            photos = photos.filter(item => item !== url);
+            localStorage.setItem('photophy_gallery', JSON.stringify(photos));
+        }
+
+        function clearAllGallery() {
+            if(confirm("Yakin ingin menghapus semua foto di galeri?")) {
+                localStorage.removeItem('photophy_gallery');
+                gallery.innerHTML = '';
+            }
+        }
+
         function showFlash() { 
             document.getElementById('flash').classList.add('flash-active'); 
             setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300); 
@@ -485,6 +531,7 @@
         }
         
         startCamera();
+        loadGallery();
     </script>
 </body>
 </html>
