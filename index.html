@@ -90,7 +90,6 @@
             width: 100%; height: 75px; border: 2px dashed var(--border-color); border-radius: 8px; background: white;
             display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 11px; font-weight: 700;
         }
-        #frame-mini-preview img { width: 100%; height: 100%; object-fit: contain; }
 
         .label { font-size: 11px; font-weight: 700; margin: 12px 0 6px 0; text-transform: uppercase; color: var(--dark-text); }
         .selector-group { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
@@ -151,7 +150,7 @@
                 
                 <div class="side-preview">
                     <div class="label" style="margin-top:0">Frame</div>
-                    <div id="frame-mini-preview">None</div>
+                    <div id="frame-mini-preview">Cute Style</div>
                     <button class="switch-btn" style="background:var(--yellow)" onclick="switchCamera()">🔄 SWAP</button>
                     <button class="switch-btn" style="background:var(--blue)" onclick="document.getElementById('file-in').click()">📁 LOAD</button>
                     <input type="file" id="file-in" hidden accept="image/*" onchange="handleUpload(event)">
@@ -167,15 +166,20 @@
             <div id="main-controls">
                 <div class="label">1. Choose Layout</div>
                 <div class="selector-group">
-                    <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 600, 800, this)">SINGLE</button>
-                    <button class="btn-option" onclick="selectLayout('STRIP', 3, 600, 1800, this)">STRIP (3)</button>
-                    <button class="btn-option" onclick="selectLayout('GRID', 4, 800, 800, this)">GRID (4)</button>
-                    <button class="btn-option" onclick="selectLayout('STORY3', 3, 1080, 1920, this)">STORY (3)</button>
-                    <button class="btn-option" onclick="selectLayout('STORY4', 4, 1080, 1920, this)">STORY (4)</button>
+                    <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 600, 800, 500, 700, this)">SINGLE</button>
+                    <button class="btn-option" onclick="selectLayout('STRIP', 3, 600, 1600, 480, 360, this)">STRIP (3)</button>
+                    <button class="btn-option" onclick="selectLayout('GRID', 4, 800, 800, 340, 340, this)">GRID (4)</button>
+                    <button class="btn-option" onclick="selectLayout('STORY3', 3, 1080, 1920, 880, 480, this)">STORY (3)</button>
+                    <button class="btn-option" onclick="selectLayout('STORY4', 4, 1080, 1920, 440, 580, this)">STORY (4)</button>
                 </div>
 
-                <div class="label">2. Choose Design</div>
-                <div id="frame-options" class="selector-group"></div>
+                <div class="label">2. Cute Theme Color</div>
+                <div class="selector-group">
+                    <button class="btn-option active" onclick="setTheme('pink', this)">PINKY</button>
+                    <button class="btn-option" onclick="setTheme('blue', this)">SKY BLUE</button>
+                    <button class="btn-option" onclick="setTheme('purple', this)">LAVENDER</button>
+                    <button class="btn-option" onclick="setTheme('yellow', this)">BUTTER</button>
+                </div>
 
                 <div class="label">3. Filter & Effects</div>
                 <div class="selector-group">
@@ -208,27 +212,24 @@
         const countdownEl = document.getElementById('countdown');
         const snapBtn = document.getElementById('snap');
         const miniPreview = document.getElementById('frame-mini-preview');
-        const frameOptions = document.getElementById('frame-options');
         const zoomRange = document.getElementById('zoom-range');
 
         let currentFilter = 'none';
-        let currentLayout = { id: 'SINGLE', count: 1, w: 600, h: 800 };
-        let selectedFrameURL = 'none';
+        let currentTheme = '#ffb3c6'; // Warna tema default pink
+        let currentLayout = { 
+            id: 'SINGLE', count: 1, w: 600, h: 800, 
+            slotW: 500, slotH: 700 
+        };
         let useFacingMode = 'user';
         let capturedImgs = [];
         let tempImg = new Image();
         let offX = 0, offY = 0, scale = 1, isDragging = false, lastX, lastY;
 
-        // Hanya Strip 3 yang memiliki frame khusus saat ini, yang lain hanya 'NONE'
-        const frameDatabase = {
-            'SINGLE': [{ name: 'NONE', url: 'none' }],
-            'STRIP': [
-                { name: 'NONE', url: 'none' }, 
-                { name: 'WOODEN STRIP', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
-            ],
-            'GRID': [{ name: 'NONE', url: 'none' }],
-            'STORY3': [{ name: 'NONE', url: 'none' }],
-            'STORY4': [{ name: 'NONE', url: 'none' }]
+        const themeColors = {
+            pink: '#ffb3c6',
+            blue: '#bde0fe',
+            purple: '#ffc8dd',
+            yellow: '#fdffb6'
         };
 
         const filterStyles = {
@@ -256,28 +257,15 @@
             startCamera(); 
         }
 
-        function selectLayout(id, count, w, h, el) {
-            currentLayout = { id, count, w, h };
+        function selectLayout(id, count, w, h, sw, sh, el) {
+            currentLayout = { id, count, w, h, slotW: sw, slotH: sh };
             capturedImgs = []; 
             updateActive(el, '.btn-option');
-            renderFrameOptions(id);
-            setFrame('none');
         }
 
-        function renderFrameOptions(id) {
-            frameOptions.innerHTML = '';
-            frameDatabase[id].forEach(frame => {
-                const btn = document.createElement('button');
-                btn.className = 'btn-option';
-                btn.innerText = frame.name;
-                btn.onclick = () => { setFrame(frame.url); updateActive(btn, '.btn-option'); };
-                frameOptions.appendChild(btn);
-            });
-        }
-
-        function setFrame(url) {
-            selectedFrameURL = url;
-            miniPreview.innerHTML = url === 'none' ? 'None' : `<img src="${url}">`;
+        function setTheme(themeKey, el) {
+            currentTheme = themeColors[themeKey];
+            updateActive(el, '.btn-option');
         }
 
         function setFilter(f, el) {
@@ -322,10 +310,10 @@
             });
         }
 
-        // --- FIX LOGIKA POTONGAN/CROP AGAR TIDAK KETARIK (OBJECT-FIT COVER STYLE) ---
         function grabFrame() {
             const temp = document.createElement('canvas');
-            let tw = 600, th = 450; // Resolusi standar per kotak foto
+            let tw = currentLayout.slotW; 
+            let th = currentLayout.slotH;
             temp.width = tw; temp.height = th;
             const tCtx = temp.getContext('2d');
             tCtx.filter = filterStyles[currentFilter];
@@ -341,7 +329,6 @@
             const tRatio = tw / th;
             let sx, sy, sw, sh;
 
-            // Perhitungan matematika agar gambar menutupi kotak secara proporsional tanpa distorsi (ketarik)
             if (vRatio > tRatio) { 
                 sw = vh * tRatio; 
                 sh = vh; 
@@ -394,8 +381,8 @@
         zoomRange.oninput = e => { scale = e.target.value; drawAdj(); };
 
         function confirmAdjustment() {
-            const c = document.createElement('canvas'); c.width = 600; c.height = 450;
-            c.getContext('2d').drawImage(adjCanvas, 0, 0);
+            const c = document.createElement('canvas'); c.width = currentLayout.slotW; c.height = currentLayout.slotH;
+            c.getContext('2d').drawImage(adjCanvas, 0, 0, 600, 450, 0, 0, currentLayout.slotW, currentLayout.slotH);
             capturedImgs.push(c);
             
             adjCanvas.style.display = 'none';
@@ -409,39 +396,50 @@
             }
         }
 
-        // --- RENDER FINAL SESUAI LAYOUT MASING-MASING ---
         async function renderFinal() {
             const ctx = canvas.getContext('2d');
             canvas.width = currentLayout.w; canvas.height = currentLayout.h;
-            ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = currentTheme; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (currentLayout.id === 'SINGLE') {
-                ctx.drawImage(capturedImgs[0], 50, 50, 500, 700);
+                drawRoundedBox(ctx, 45, 45, 510, 610, 15, '#ffffff');
+                ctx.drawImage(capturedImgs[0], 55, 55, 490, 590);
+                drawCuteDecorations(ctx, canvas.width, canvas.height);
             } 
             else if (currentLayout.id === 'STRIP') {
-                // Koordinat presisi khusus untuk frame strip kayu (layphy1)
-                ctx.drawImage(capturedImgs[0], 65, 75, 470, 340);
-                ctx.drawImage(capturedImgs[1], 65, 455, 470, 340);
-                ctx.drawImage(capturedImgs[2], 65, 835, 470, 340);
+                let startY = 50;
+                let sW = 480, sH = 370;
+                let startX = (canvas.width - sW) / 2;
+                for(let i=0; i<3; i++) {
+                    drawRoundedBox(ctx, startX - 10, startY - 10, sW + 20, sH + 20, 12, '#ffffff');
+                    ctx.drawImage(capturedImgs[i], startX, startY, sW, sH);
+                    startY += sH + 30;
+                }
+                drawCuteDecorations(ctx, canvas.width, canvas.height);
             }
             else if (currentLayout.id === 'GRID') {
                 ctx.drawImage(capturedImgs[0], 50, 50, 330, 330);
                 ctx.drawImage(capturedImgs[1], 420, 50, 330, 330);
                 ctx.drawImage(capturedImgs[2], 50, 420, 330, 330);
                 ctx.drawImage(capturedImgs[3], 420, 420, 330, 330);
+                drawCuteDecorations(ctx, canvas.width, canvas.height);
             }
             else if (currentLayout.id === 'STORY3') {
-                for(let i=0; i<3; i++) ctx.drawImage(capturedImgs[i], 100, 200 + (i*520), 880, 480);
+                let startY = 150;
+                for(let i=0; i<3; i++) {
+                    ctx.drawImage(capturedImgs[i], 100, startY, 880, 480);
+                    startY += 540;
+                }
+                drawCuteDecorations(ctx, canvas.width, canvas.height);
             }
             else if (currentLayout.id === 'STORY4') {
-                ctx.drawImage(capturedImgs[0], 100, 200, 420, 560); ctx.drawImage(capturedImgs[1], 560, 200, 420, 560);
-                ctx.drawImage(capturedImgs[2], 100, 850, 420, 560); ctx.drawImage(capturedImgs[3], 560, 850, 420, 560);
-            }
-
-            if (selectedFrameURL !== 'none') {
-                const fImg = new Image(); fImg.crossOrigin = "anonymous"; fImg.src = selectedFrameURL;
-                await new Promise(r => fImg.onload = r);
-                ctx.drawImage(fImg, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(capturedImgs[0], 100, 200, 420, 560); 
+                ctx.drawImage(capturedImgs[1], 560, 200, 420, 560);
+                ctx.drawImage(capturedImgs[2], 100, 850, 420, 560); 
+                ctx.drawImage(capturedImgs[3], 560, 850, 420, 560);
+                drawCuteDecorations(ctx, canvas.width, canvas.height);
             }
 
             const url = canvas.toDataURL('image/png');
@@ -458,6 +456,23 @@
             capturedImgs = []; 
         }
 
+        function drawRoundedBox(ctx, x, y, width, height, radius, fillColor) {
+            ctx.beginPath();
+            ctx.roundRect(x, y, width, height, radius);
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#594a4e';
+            ctx.stroke();
+        }
+
+        function drawCuteDecorations(ctx, w, h) {
+            ctx.fillStyle = '#594a4e';
+            ctx.font = 'bold 20px Quicksand, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('✧ photophy ✧ (✿◠‿◠)', w / 2, h - 35);
+        }
+
         function showFlash() { 
             document.getElementById('flash').classList.add('flash-active'); 
             setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300); 
@@ -470,7 +485,6 @@
         }
         
         startCamera();
-        renderFrameOptions('SINGLE');
     </script>
 </body>
 </html>
