@@ -168,7 +168,7 @@
                 <div class="label">1. Choose Layout</div>
                 <div class="selector-group">
                     <button class="btn-option active" onclick="selectLayout('SINGLE', 1, 600, 800, this)">SINGLE</button>
-                    <button class="btn-option" onclick="selectLayout('STRIP', 3, 600, 1400, this)">STRIP (3)</button>
+                    <button class="btn-option" onclick="selectLayout('STRIP', 3, 600, 1800, this)">STRIP (3)</button>
                     <button class="btn-option" onclick="selectLayout('GRID', 4, 800, 800, this)">GRID (4)</button>
                     <button class="btn-option" onclick="selectLayout('STORY3', 3, 1080, 1920, this)">STORY (3)</button>
                     <button class="btn-option" onclick="selectLayout('STORY4', 4, 1080, 1920, this)">STORY (4)</button>
@@ -177,13 +177,16 @@
                 <div class="label">2. Choose Design</div>
                 <div id="frame-options" class="selector-group"></div>
 
-                <div class="label">3. Filter</div>
+                <div class="label">3. Filter & Effects</div>
                 <div class="selector-group">
                     <button class="btn-option active" onclick="setFilter('none', this)">NORMAL</button>
                     <button class="btn-option" onclick="setFilter('vintage', this)">VINTAGE</button>
                     <button class="btn-option" onclick="setFilter('bw', this)">B&W</button>
                     <button class="btn-option" onclick="setFilter('rosy', this)">ROSY</button>
                     <button class="btn-option" onclick="setFilter('cold', this)">COLD</button>
+                    <button class="btn-option" onclick="setFilter('dreamy', this)">DREAMY</button>
+                    <button class="btn-option" onclick="setFilter('sunset', this)">SUNSET</button>
+                    <button class="btn-option" onclick="setFilter('cyber', this)">CYBER</button>
                 </div>
 
                 <button id="snap" class="main-btn">✨ TAKE PHOTO ✨</button>
@@ -216,36 +219,27 @@
         let tempImg = new Image();
         let offX = 0, offY = 0, scale = 1, isDragging = false, lastX, lastY;
 
-        // Database frame dipetakan spesifik per layout agar tidak salah pasang
+        // Hanya Strip 3 yang memiliki frame khusus saat ini, yang lain hanya 'NONE'
         const frameDatabase = {
-            'SINGLE': [
-                { name: 'NONE', url: 'none' }, 
-                { name: 'FRAME 1', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
-            ],
+            'SINGLE': [{ name: 'NONE', url: 'none' }],
             'STRIP': [
                 { name: 'NONE', url: 'none' }, 
-                { name: 'STRIP A', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
+                { name: 'WOODEN STRIP', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
             ],
-            'GRID': [
-                { name: 'NONE', url: 'none' }, 
-                { name: 'GRID A', url: 'https://i.ibb.co.com/Yn4fKQv/layphy2.png' }
-            ],
-            'STORY3': [
-                { name: 'NONE', url: 'none' }, 
-                { name: 'IG 3A', url: 'https://i.ibb.co.com/fGzfpG5R/layphy1.png' }
-            ],
-            'STORY4': [
-                { name: 'NONE', url: 'none' }, 
-                { name: 'IG 4A', url: 'https://i.ibb.co.com/Yn4fKQv/layphy2.png' }
-            ]
+            'GRID': [{ name: 'NONE', url: 'none' }],
+            'STORY3': [{ name: 'NONE', url: 'none' }],
+            'STORY4': [{ name: 'NONE', url: 'none' }]
         };
 
         const filterStyles = {
             none: '',
             vintage: 'sepia(0.5) contrast(1.1) brightness(1.1)',
             bw: 'grayscale(1) contrast(1.2)',
-            rosy: 'hue-rotate(-20deg) saturate(1.2) brightness(1.1)',
-            cold: 'contrast(1.1) brightness(1.1) saturate(0.8) hue-rotate(180deg) opacity(0.9)'
+            rosy: 'hue-rotate(-20deg) saturate(1.3) brightness(1.1)',
+            cold: 'contrast(1.1) brightness(1.1) saturate(0.8) hue-rotate(180deg)',
+            dreamy: 'brightness(1.2) contrast(0.9) saturate(1.4) blur(0.2px)',
+            sunset: 'sepia(0.3) saturate(1.5) hue-rotate(-30deg) contrast(1.1)',
+            cyber: 'saturate(2) hue-rotate(90deg) contrast(1.2)'
         };
 
         async function startCamera() {
@@ -328,18 +322,38 @@
             });
         }
 
+        // --- FIX LOGIKA POTONGAN/CROP AGAR TIDAK KETARIK (OBJECT-FIT COVER STYLE) ---
         function grabFrame() {
             const temp = document.createElement('canvas');
-            let tw = 600, th = 450;
+            let tw = 600, th = 450; // Resolusi standar per kotak foto
             temp.width = tw; temp.height = th;
             const tCtx = temp.getContext('2d');
             tCtx.filter = filterStyles[currentFilter];
-            if (useFacingMode === 'user') { tCtx.translate(tw, 0); tCtx.scale(-1, 1); }
-            const vw = video.videoWidth; const vh = video.videoHeight;
-            const vRatio = vw / vh; const tRatio = tw / th;
+
+            if (useFacingMode === 'user') { 
+                tCtx.translate(tw, 0); 
+                tCtx.scale(-1, 1); 
+            }
+
+            const vw = video.videoWidth; 
+            const vh = video.videoHeight;
+            const vRatio = vw / vh; 
+            const tRatio = tw / th;
             let sx, sy, sw, sh;
-            if (vRatio > tRatio) { sw = vh * tRatio; sh = vh; sx = (vw - sw) / 2; sy = 0; }
-            else { sw = vw; sh = vw / tRatio; sx = 0; sy = (vh - sh) / 2; }
+
+            // Perhitungan matematika agar gambar menutupi kotak secara proporsional tanpa distorsi (ketarik)
+            if (vRatio > tRatio) { 
+                sw = vh * tRatio; 
+                sh = vh; 
+                sx = (vw - sw) / 2; 
+                sy = 0; 
+            } else { 
+                sw = vw; 
+                sh = vw / tRatio; 
+                sx = 0; 
+                sy = (vh - sh) / 2; 
+            }
+
             tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, tw, th);
             return temp;
         }
@@ -395,26 +409,26 @@
             }
         }
 
-        // --- RENDER FINAL DENGAN POSISI SLOT PRESISI ---
+        // --- RENDER FINAL SESUAI LAYOUT MASING-MASING ---
         async function renderFinal() {
             const ctx = canvas.getContext('2d');
             canvas.width = currentLayout.w; canvas.height = currentLayout.h;
             ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Mapping koordinat gambar sesuai layout yang dipilih
             if (currentLayout.id === 'SINGLE') {
-                ctx.drawImage(capturedImgs[0], 60, 65, 480, 420);
+                ctx.drawImage(capturedImgs[0], 50, 50, 500, 700);
             } 
             else if (currentLayout.id === 'STRIP') {
+                // Koordinat presisi khusus untuk frame strip kayu (layphy1)
                 ctx.drawImage(capturedImgs[0], 65, 75, 470, 340);
                 ctx.drawImage(capturedImgs[1], 65, 455, 470, 340);
                 ctx.drawImage(capturedImgs[2], 65, 835, 470, 340);
             }
             else if (currentLayout.id === 'GRID') {
-                ctx.drawImage(capturedImgs[0], 60, 60, 320, 320);
-                ctx.drawImage(capturedImgs[1], 420, 60, 320, 320);
-                ctx.drawImage(capturedImgs[2], 60, 420, 320, 320);
-                ctx.drawImage(capturedImgs[3], 420, 420, 320, 320);
+                ctx.drawImage(capturedImgs[0], 50, 50, 330, 330);
+                ctx.drawImage(capturedImgs[1], 420, 50, 330, 330);
+                ctx.drawImage(capturedImgs[2], 50, 420, 330, 330);
+                ctx.drawImage(capturedImgs[3], 420, 420, 330, 330);
             }
             else if (currentLayout.id === 'STORY3') {
                 for(let i=0; i<3; i++) ctx.drawImage(capturedImgs[i], 100, 200 + (i*520), 880, 480);
@@ -424,7 +438,6 @@
                 ctx.drawImage(capturedImgs[2], 100, 850, 420, 560); ctx.drawImage(capturedImgs[3], 560, 850, 420, 560);
             }
 
-            // Timpa dengan frame desain jika dipilih selain 'none'
             if (selectedFrameURL !== 'none') {
                 const fImg = new Image(); fImg.crossOrigin = "anonymous"; fImg.src = selectedFrameURL;
                 await new Promise(r => fImg.onload = r);
