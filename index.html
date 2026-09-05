@@ -4,18 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>✧ photophy ✧</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --pink: #ffafcc; --blue: #a2d2ff; --green: #caffbf; --yellow: #fdffb6; --purple: #cdb4db;
+            --pink: #ffb3c6; 
+            --light-pink: #ffe5ec;
+            --blue: #bde0fe; 
+            --green: #caffbf; 
+            --yellow: #fdffb6; 
+            --purple: #ffc8dd;
+            --dark-text: #594a4e;
+            --border-color: #594a4e;
         }
 
         body {
-            background-color: var(--blue);
-            background-image: radial-gradient(var(--pink) 1px, transparent 1px);
-            background-size: 25px 25px;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0;
-            overflow-x: hidden; touch-action: manipulation; min-height: 100vh;
+            background-color: #fce4ec;
+            background-image: radial-gradient(var(--pink) 2px, transparent 2px);
+            background-size: 20px 20px;
+            font-family: 'Quicksand', sans-serif;
+            color: var(--dark-text);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 15px; 
+            margin: 0;
+            overflow-x: hidden; 
+            touch-action: manipulation; 
+            min-height: 100vh;
         }
 
         #flash {
@@ -26,17 +41,22 @@
         @keyframes flash-anim { 0% { opacity: 1; } 100% { opacity: 0; } }
 
         .window {
-            background: white; border: 4px solid #000; box-shadow: 8px 8px 0px #000;
-            width: 95%; max-width: 500px; margin-top: 10px;
+            background: #ffffff; 
+            border: 3px solid var(--border-color); 
+            border-radius: 20px;
+            box-shadow: 6px 6px 0px var(--border-color);
+            width: 95%; max-width: 480px; margin-top: 10px;
+            overflow: hidden;
         }
 
         .title-bar {
             background: linear-gradient(90deg, var(--purple), var(--pink));
-            color: white; padding: 8px 12px; display: flex; justify-content: space-between;
-            font-weight: bold; border-bottom: 4px solid #000; font-size: 14px;
+            color: var(--dark-text); padding: 10px 15px; display: flex; justify-content: space-between;
+            font-weight: 700; border-bottom: 3px solid var(--border-color); font-size: 15px;
+            letter-spacing: 1px;
         }
 
-        .content { padding: 12px; text-align: center; }
+        .content { padding: 15px; text-align: center; }
 
         .camera-section {
             display: flex; gap: 10px; align-items: flex-start; justify-content: center; margin-bottom: 15px;
@@ -44,7 +64,8 @@
 
         #camera-box {
             position: relative; flex: 3; aspect-ratio: 4/3; 
-            background: #000; border: 3px solid #000; 
+            background: #000; border: 3px solid var(--border-color); 
+            border-radius: 12px;
             overflow: hidden;
         }
 
@@ -54,57 +75,64 @@
 
         #countdown {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 60px; color: white; font-weight: bold; z-index: 100;
-            text-shadow: 4px 4px 0px var(--pink); display: none;
+            font-size: 70px; color: white; font-weight: 700; z-index: 100;
+            text-shadow: 3px 3px 0px var(--border-color); display: none;
+            animation: bounce 0.4s infinite alternate;
         }
+        @keyframes bounce { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.1); } }
 
         .side-preview {
             flex: 1; display: flex; flex-direction: column; align-items: center; 
-            background: #f9f9f9; border: 2px solid #000; padding: 5px; min-height: 120px;
+            background: var(--light-pink); border: 2px solid var(--border-color); border-radius: 12px; padding: 8px; min-height: 120px;
         }
 
         #frame-mini-preview {
-            width: 100%; height: 80px; border: 1px solid #000; background: #eee;
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            width: 100%; height: 75px; border: 2px dashed var(--border-color); border-radius: 8px; background: white;
+            display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 11px; font-weight: 700;
         }
         #frame-mini-preview img { width: 100%; height: 100%; object-fit: contain; }
 
-        .label { font-size: 10px; font-weight: bold; margin: 10px 0 5px 0; text-transform: uppercase; color: #333; }
-        .selector-group { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+        .label { font-size: 11px; font-weight: 700; margin: 12px 0 6px 0; text-transform: uppercase; color: var(--dark-text); }
+        .selector-group { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
         
         .btn-option {
-            padding: 4px 8px; border: 2px solid #000; background: #eee;
-            cursor: pointer; font-size: 9px; font-weight: bold; font-family: inherit;
+            padding: 6px 10px; border: 2px solid var(--border-color); background: white;
+            border-radius: 8px; cursor: pointer; font-size: 10px; font-weight: 700; font-family: inherit;
+            transition: all 0.1s ease;
         }
-        .active { background: var(--pink) !important; color: white; transform: translateY(-2px); box-shadow: 2px 2px 0px #000; }
+        .btn-option:hover { background: var(--light-pink); }
+        .active { background: var(--pink) !important; color: white; transform: translateY(-2px); box-shadow: 2px 2px 0px var(--border-color); }
 
         .main-btn {
-            width: 100%; padding: 15px; background: var(--green); border: 3px solid #000;
-            font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 4px 4px 0px #000; 
-            margin-top: 10px;
+            width: 100%; padding: 12px; background: var(--green); border: 3px solid var(--border-color);
+            border-radius: 14px; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 3px 3px 0px var(--border-color); 
+            margin-top: 10px; font-family: inherit; color: var(--dark-text);
+            transition: transform 0.1s ease;
         }
+        .main-btn:active { transform: translateY(2px); box-shadow: 1px 1px 0px var(--border-color); }
         
         .switch-btn {
-            padding: 5px; border: 2px solid #000; 
-            font-size: 9px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%;
+            padding: 6px; border: 2px solid var(--border-color); border-radius: 8px;
+            font-size: 10px; font-weight: 700; cursor: pointer; margin-top: 6px; width: 100%; font-family: inherit;
         }
 
-        #adjust-ui { display: none; background: #f0f0f0; padding: 10px; border: 2px dashed #000; margin-top: 10px; }
+        #adjust-ui { display: none; background: var(--light-pink); padding: 12px; border: 2px dashed var(--border-color); border-radius: 12px; margin-top: 10px; }
 
         #gallery {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
-            margin-top: 25px; width: 95%; max-width: 500px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            margin-top: 25px; width: 95%; max-width: 480px;
         }
 
         .polaroid {
-            background: white; padding: 8px; border: 2px solid #000;
-            transform: rotate(var(--r)); margin-bottom: 20px;
+            background: white; padding: 10px; border: 3px solid var(--border-color); border-radius: 12px;
+            box-shadow: 4px 4px 0px var(--border-color);
+            transform: rotate(var(--r)); margin-bottom: 15px;
         }
-        .polaroid img { width: 100%; border: 1px solid #eee; margin-bottom: 8px; display: block; }
-        .pol-btns { display: flex; flex-direction: column; gap: 4px; }
-        .pol-btns button { width: 100%; padding: 6px; font-size: 10px; cursor: pointer; border: 1px solid #000; font-weight: bold; }
+        .polaroid img { width: 100%; border: 2px solid var(--light-pink); border-radius: 6px; margin-bottom: 8px; display: block; }
+        .pol-btns { display: flex; flex-direction: column; gap: 5px; }
+        .pol-btns button { width: 100%; padding: 6px; font-size: 10px; cursor: pointer; border: 2px solid var(--border-color); border-radius: 6px; font-weight: 700; font-family: inherit; }
 
-        footer { margin-top: 40px; margin-bottom: 20px; font-size: 11px; font-weight: bold; }
+        footer { margin-top: 30px; margin-bottom: 20px; font-size: 12px; font-weight: 700; color: var(--dark-text); }
     </style>
 </head>
 <body>
@@ -112,7 +140,7 @@
     <div id="flash"></div>
 
     <div class="window">
-        <div class="title-bar"><span>📸 photophy</span><span>[X]</span></div>
+        <div class="title-bar"><span>📸 ✧ photophy ✧</span><span>(✿◠‿◠)</span></div>
         <div class="content">
             <div class="camera-section">
                 <div id="camera-box">
@@ -132,7 +160,7 @@
 
             <div id="adjust-ui">
                 <div class="label" id="slot-info">Zoom & Geser Foto (1/1)</div>
-                <input type="range" id="zoom-range" min="0.1" max="2" step="0.01" value="1" style="width:100%">
+                <input type="range" id="zoom-range" min="0.1" max="2" step="0.01" value="1" style="width:100%; accent-color: var(--pink);">
                 <button class="main-btn" style="background:var(--purple); margin-top:10px" onclick="confirmAdjustment()">✅ NEXT / DONE</button>
             </div>
 
@@ -166,7 +194,7 @@
     <div id="gallery"></div>
     <canvas id="canvas" style="display:none;"></canvas>
 
-    <footer>by @widiyauwilloveu ✧</footer>
+    <footer>made with 🩷 by @widiyauwilloveu ✧</footer>
 
     <script>
         const video = document.getElementById('video');
@@ -209,14 +237,18 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: useFacingMode } });
                 video.srcObject = stream;
-            } catch (err) { alert("Akses kamera ditolak."); }
+            } catch (err) { alert("Akses kamera ditolak atau perangkat tidak mendukung."); }
         }
 
-        function switchCamera() { useFacingMode = useFacingMode === 'user' ? 'environment' : 'user'; video.classList.toggle('mirror', useFacingMode==='user'); startCamera(); }
+        function switchCamera() { 
+            useFacingMode = useFacingMode === 'user' ? 'environment' : 'user'; 
+            video.classList.toggle('mirror', useFacingMode === 'user'); 
+            startCamera(); 
+        }
 
         function selectLayout(id, count, w, h, el) {
             currentLayout = { id, count, w, h };
-            capturedImgs = []; // Reset progress
+            capturedImgs = []; 
             updateActive(el, '.btn-option');
             renderFrameOptions(id);
             setFrame('none');
@@ -249,7 +281,6 @@
             el.classList.add('active');
         }
 
-        // --- KAMERA OTOMATIS ---
         snapBtn.addEventListener('click', async () => {
             snapBtn.disabled = true;
             capturedImgs = [];
@@ -257,6 +288,7 @@
                 await runCountdown(3);
                 capturedImgs.push(grabFrame());
                 showFlash();
+                if(i < currentLayout.count - 1) await new Promise(r => setTimeout(r, 600));
             }
             renderFinal();
             snapBtn.disabled = false;
@@ -265,12 +297,18 @@
         function runCountdown(sec) {
             return new Promise(res => {
                 let count = sec;
-                countdownEl.style.display = 'block'; countdownEl.innerText = count;
+                countdownEl.style.display = 'block'; 
+                countdownEl.innerText = count;
                 let timer = setInterval(() => {
                     count--;
-                    if(count <= 0) { clearInterval(timer); countdownEl.style.display = 'none'; res(); }
-                    else { countdownEl.innerText = count; }
-                }, 800);
+                    if(count <= 0) { 
+                        clearInterval(timer); 
+                        countdownEl.style.display = 'none'; 
+                        res(); 
+                    } else { 
+                        countdownEl.innerText = count; 
+                    }
+                }, 1000);
             });
         }
 
@@ -291,10 +329,10 @@
             return temp;
         }
 
-        // --- LOAD GALERI FIX (MULTI PHOTO) ---
         function handleUpload(e) {
             if (capturedImgs.length >= currentLayout.count) {
-                alert("Slot sudah penuh! Silakan buat baru."); return;
+                alert("Slot sudah penuh! Selesaikan atau buat baru."); 
+                return;
             }
             const reader = new FileReader();
             reader.onload = (f) => {
@@ -311,19 +349,19 @@
                 tempImg.src = f.target.result;
             };
             reader.readAsDataURL(e.target.files[0]);
-            e.target.value = ''; // Reset input agar bisa upload file yang sama
+            e.target.value = ''; 
         }
 
         function drawAdj() {
-            adjCtx.fillStyle = '#000'; adjCtx.fillRect(0,0,600,450);
+            adjCtx.fillStyle = '#000'; adjCtx.fillRect(0, 0, 600, 450);
             adjCtx.filter = filterStyles[currentFilter];
             const w = tempImg.width * scale, h = tempImg.height * scale;
             adjCtx.drawImage(tempImg, offX - w/2, offY - h/2, w, h);
         }
 
-        adjCanvas.onpointerdown = e => { isDragging=true; lastX=e.clientX; lastY=e.clientY; };
-        window.onpointermove = e => { if(!isDragging) return; offX+=e.clientX-lastX; offY+=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY; drawAdj(); };
-        window.onpointerup = () => isDragging=false;
+        adjCanvas.onpointerdown = e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; };
+        window.onpointermove = e => { if(!isDragging) return; offX += e.clientX - lastX; offY += e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; drawAdj(); };
+        window.onpointerup = () => isDragging = false;
         zoomRange.oninput = e => { scale = e.target.value; drawAdj(); };
 
         function confirmAdjustment() {
@@ -335,7 +373,6 @@
             document.getElementById('adjust-ui').style.display = 'none';
             document.getElementById('main-controls').style.display = 'block';
             
-            // Cek apakah slot sudah penuh sesuai layout (Strip butuh 3, dll)
             if(capturedImgs.length >= currentLayout.count) {
                 renderFinal();
             } else {
@@ -384,11 +421,19 @@
                 </div>
             `;
             gallery.prepend(div);
-            capturedImgs = []; // Reset setelah muncul di galeri
+            capturedImgs = []; 
         }
 
-        function showFlash() { document.getElementById('flash').classList.add('flash-active'); setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300); }
-        function downloadImg(url) { const a = document.createElement('a'); a.href = url; a.download = `photo_${Date.now()}.png`; a.click(); }
+        function showFlash() { 
+            document.getElementById('flash').classList.add('flash-active'); 
+            setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 300); 
+        }
+        function downloadImg(url) { 
+            const a = document.createElement('a'); 
+            a.href = url; 
+            a.download = `photophy_${Date.now()}.png`; 
+            a.click(); 
+        }
         
         startCamera();
         renderFrameOptions('SINGLE');
